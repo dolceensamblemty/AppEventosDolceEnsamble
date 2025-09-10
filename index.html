@@ -179,8 +179,6 @@
                     Iniciar Sesión 🎵
                 </button>
             </form>
-            
-
         </div>
     </div>
 
@@ -285,19 +283,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Instruments Management -->
-                <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
-                        <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                            <i class="fas fa-plus mr-2"></i>Agregar Instrumento
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="instrumentsList">
-                        <!-- Instruments will be populated here -->
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -322,6 +307,9 @@
                             </button>
                             <button id="adminCalendarBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
                                 🗓️ Calendario
+                            </button>
+                            <button id="adminChatsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                                💬 Chats
                             </button>
                             <button id="adminDataBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
                                 📊 Datos
@@ -395,6 +383,42 @@
                 </div>
             </div>
 
+            <!-- Chats Management -->
+            <div id="adminChatsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">💬 Gestión de Chats</h2>
+                    <div class="flex space-x-2">
+                        <button id="createGroupChatBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                            <i class="fas fa-plus mr-2"></i>Crear Chat Grupal
+                        </button>
+                        <button id="clearAllChatsBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                            <i class="fas fa-trash mr-2"></i>Limpiar Todos
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat Statistics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" id="totalChats">0</div>
+                        <div class="text-sm text-blue-800">Total de Chats</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" id="groupChats">0</div>
+                        <div class="text-sm text-green-800">Chats Grupales</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-purple-600" id="totalMessages">0</div>
+                        <div class="text-sm text-purple-800">Total Mensajes</div>
+                    </div>
+                </div>
+                
+                <!-- Chats List -->
+                <div id="adminChatsList" class="space-y-3">
+                    <!-- Chats will be populated here -->
+                </div>
+            </div>
+
             <!-- Data Management -->
             <div id="adminDataPanel" class="hidden space-y-6">
                 <!-- Firebase Sync -->
@@ -455,18 +479,18 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Instruments Management -->
-                <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
-                        <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                            <i class="fas fa-plus mr-2"></i>Agregar Instrumento
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="instrumentsList">
-                        <!-- Instruments will be populated here -->
-                    </div>
+            <!-- Instruments Management -->
+            <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
+                    <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                        <i class="fas fa-plus mr-2"></i>Agregar Instrumento
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="adminInstrumentsList">
+                    <!-- Instruments will be populated here -->
                 </div>
             </div>
         </div>
@@ -491,33 +515,52 @@
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
-
-                <!-- Instruments Management -->
-                <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
-                        <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                            <i class="fas fa-plus mr-2"></i>Agregar Instrumento
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="instrumentsList">
-                        <!-- Instruments will be populated here -->
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- User Modal -->
-    <div id="userModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <!-- Group Chat Modal -->
+    <div id="groupChatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
             <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-bold text-gray-800">Crear Chat Grupal</h3>
+                <button id="closeGroupChatBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="groupChatForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Grupo</label>
+                    <input type="text" id="groupChatName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Participantes</label>
+                    <div id="groupChatParticipants" class="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                        <!-- Participants checkboxes will be populated here -->
+                    </div>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
+                        Crear Grupo
+                    </button>
+                    <button type="button" id="cancelGroupChatBtn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg my-8 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white rounded-t-xl">
                 <h3 id="userModalTitle" class="text-lg font-bold text-gray-800">Editar Usuario</h3>
                 <button id="closeUserBtn" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="userForm" class="p-6 space-y-4">
+            <form id="userForm" class="p-4 space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
                     <input type="text" id="editUsername" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
@@ -532,7 +575,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Instrumentos</label>
-                    <div id="instrumentsCheckboxes" class="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                    <div id="instrumentsCheckboxes" class="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-gray-50">
                         <!-- Instruments checkboxes will be populated here -->
                     </div>
                 </div>
@@ -547,11 +590,11 @@
                         <option value="inactive">❌ Inactivo</option>
                     </select>
                 </div>
-                <div class="flex space-x-3 pt-4">
-                    <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
+                <div class="flex space-x-3 pt-4 pb-2 sticky bottom-0 bg-white">
+                    <button type="submit" class="flex-1 bg-purple-500 text-white py-3 rounded-lg hover:bg-purple-600 transition font-medium">
                         Guardar Cambios
                     </button>
-                    <button type="button" id="cancelUserBtn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                    <button type="button" id="cancelUserBtn" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition font-medium">
                         Cancelar
                     </button>
                 </div>
@@ -752,11 +795,19 @@
             document.getElementById('adminUsersBtn').addEventListener('click', () => showAdminPanel('users'));
             document.getElementById('adminEventsBtn').addEventListener('click', () => showAdminPanel('events'));
             document.getElementById('adminCalendarBtn').addEventListener('click', () => showAdminPanel('calendar'));
+            document.getElementById('adminChatsBtn').addEventListener('click', () => showAdminPanel('chats'));
             document.getElementById('adminDataBtn').addEventListener('click', () => showAdminPanel('data'));
             document.getElementById('adminInstrumentsBtn').addEventListener('click', () => showAdminPanel('instruments'));
             document.getElementById('addUserBtn').addEventListener('click', () => openUserModal());
             document.getElementById('addEventBtn').addEventListener('click', () => openEventModal());
             document.getElementById('addInstrumentBtn').addEventListener('click', () => openInstrumentModal());
+            
+            // Chat management
+            document.getElementById('createGroupChatBtn').addEventListener('click', openGroupChatModal);
+            document.getElementById('clearAllChatsBtn').addEventListener('click', clearAllChats);
+            document.getElementById('closeGroupChatBtn').addEventListener('click', closeGroupChatModal);
+            document.getElementById('cancelGroupChatBtn').addEventListener('click', closeGroupChatModal);
+            document.getElementById('groupChatForm').addEventListener('submit', handleGroupChatSubmit);
             
             // Firebase sync
             document.getElementById('syncToFirebaseBtn').addEventListener('click', syncToFirebase);
@@ -902,12 +953,12 @@
         function exportUsersCSV() {
             const users = JSON.parse(localStorage.getItem('dolce_users'));
             const csvContent = [
-                ['Username', 'Name', 'Phone', 'Instrument', 'Status', 'Role'].join(','),
+                ['Username', 'Name', 'Phone', 'Instruments', 'Status', 'Role'].join(','),
                 ...users.map(user => [
                     user.username,
                     user.name,
                     user.phone || '',
-                    user.instrument,
+                    user.instruments ? user.instruments.join(';') : '',
                     user.status,
                     user.role
                 ].join(','))
@@ -971,7 +1022,7 @@
                                 username: values[0],
                                 name: values[1],
                                 phone: values[2],
-                                instrument: values[3],
+                                instruments: values[3] ? values[3].split(';') : [],
                                 status: values[4],
                                 role: values[5] || 'musician',
                                 password: '123456' // Default password
@@ -1093,7 +1144,7 @@
 
         function showAdminPanel(panel) {
             // Remove active class from all buttons
-            document.querySelectorAll('#adminUsersBtn, #adminEventsBtn, #adminCalendarBtn, #adminDataBtn, #adminInstrumentsBtn').forEach(btn => {
+            document.querySelectorAll('#adminUsersBtn, #adminEventsBtn, #adminCalendarBtn, #adminChatsBtn, #adminDataBtn, #adminInstrumentsBtn').forEach(btn => {
                 btn.classList.remove('bg-white', 'bg-opacity-30');
                 btn.classList.add('bg-white', 'bg-opacity-20');
             });
@@ -1102,6 +1153,7 @@
             document.getElementById('adminUsersPanel').classList.add('hidden');
             document.getElementById('adminEventsPanel').classList.add('hidden');
             document.getElementById('adminCalendarPanel').classList.add('hidden');
+            document.getElementById('adminChatsPanel').classList.add('hidden');
             document.getElementById('adminDataPanel').classList.add('hidden');
             document.getElementById('adminInstrumentsPanel').classList.add('hidden');
             
@@ -1125,6 +1177,12 @@
                     document.getElementById('adminCalendarBtn').classList.add('bg-opacity-30');
                     renderAdminCalendar();
                     break;
+                case 'chats':
+                    document.getElementById('adminChatsPanel').classList.remove('hidden');
+                    document.getElementById('adminChatsBtn').classList.remove('bg-opacity-20');
+                    document.getElementById('adminChatsBtn').classList.add('bg-opacity-30');
+                    loadAdminChats();
+                    break;
                 case 'data':
                     document.getElementById('adminDataPanel').classList.remove('hidden');
                     document.getElementById('adminDataBtn').classList.remove('bg-opacity-20');
@@ -1136,6 +1194,175 @@
                     document.getElementById('adminInstrumentsBtn').classList.add('bg-opacity-30');
                     loadInstrumentsList();
                     break;
+            }
+        }
+
+        // Chat Management Functions
+        function loadAdminChats() {
+            const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+            const chatIds = Object.keys(chats);
+            
+            // Update statistics
+            document.getElementById('totalChats').textContent = chatIds.length;
+            document.getElementById('groupChats').textContent = chatIds.filter(id => id.startsWith('group_')).length;
+            
+            let totalMessages = 0;
+            chatIds.forEach(chatId => {
+                totalMessages += chats[chatId].length;
+            });
+            document.getElementById('totalMessages').textContent = totalMessages;
+            
+            // Load chats list
+            const container = document.getElementById('adminChatsList');
+            container.innerHTML = '';
+            
+            if (chatIds.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-8">No hay chats activos</div>';
+                return;
+            }
+            
+            chatIds.forEach(chatId => {
+                const messages = chats[chatId];
+                const lastMessage = messages[messages.length - 1];
+                
+                let chatIcon = '💬';
+                let chatType = 'Chat';
+                let chatName = chatId;
+                
+                if (chatId === 'admin') {
+                    chatIcon = '👑';
+                    chatType = 'Admin';
+                    chatName = 'Chat con Administrador';
+                } else if (chatId === 'general') {
+                    chatIcon = '👥';
+                    chatType = 'General';
+                    chatName = 'Chat General';
+                } else if (chatId.startsWith('event_')) {
+                    chatIcon = '📅';
+                    chatType = 'Evento';
+                    const eventId = chatId.replace('event_', '');
+                    const events = JSON.parse(localStorage.getItem('dolce_events'));
+                    const event = events.find(e => e.id === eventId);
+                    chatName = event ? `Evento: ${event.name}` : `Evento: ${eventId}`;
+                } else if (chatId.startsWith('group_')) {
+                    chatIcon = '👥';
+                    chatType = 'Grupal';
+                    chatName = chatId.replace('group_', '').replace(/_/g, ' ');
+                } else {
+                    chatIcon = '💬';
+                    chatType = 'Privado';
+                }
+                
+                const chatCard = document.createElement('div');
+                chatCard.className = 'bg-gray-50 p-4 rounded-lg border hover:shadow-md transition';
+                chatCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start space-x-3 flex-1">
+                            <span class="text-2xl">${chatIcon}</span>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <h4 class="font-medium text-gray-800">${chatName}</h4>
+                                    <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">${chatType}</span>
+                                </div>
+                                <p class="text-sm text-gray-600">${messages.length} mensajes</p>
+                                ${lastMessage ? `
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Último: ${lastMessage.sender} - ${formatTime(lastMessage.timestamp)}
+                                    </p>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="openChat('${chatId}', '${chatName}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                👁️ Ver
+                            </button>
+                            <button onclick="deleteChat('${chatId}')" class="text-red-600 hover:text-red-800 text-sm">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(chatCard);
+            });
+        }
+
+        function openGroupChatModal() {
+            document.getElementById('groupChatModal').classList.remove('hidden');
+            loadGroupChatParticipants();
+        }
+
+        function closeGroupChatModal() {
+            document.getElementById('groupChatModal').classList.add('hidden');
+            document.getElementById('groupChatForm').reset();
+        }
+
+        function loadGroupChatParticipants() {
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const container = document.getElementById('groupChatParticipants');
+            container.innerHTML = '';
+            
+            users.forEach(user => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'flex items-center space-x-2';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="user_${user.username}" value="${user.username}" class="rounded">
+                    <label for="user_${user.username}" class="text-sm text-gray-700">${user.name} (${user.username})</label>
+                `;
+                container.appendChild(checkboxDiv);
+            });
+        }
+
+        function handleGroupChatSubmit(e) {
+            e.preventDefault();
+            const groupName = document.getElementById('groupChatName').value;
+            const selectedUsers = [];
+            
+            const checkboxes = document.querySelectorAll('#groupChatParticipants input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                selectedUsers.push(checkbox.value);
+            });
+            
+            if (selectedUsers.length < 2) {
+                alert('❌ Debe seleccionar al menos 2 participantes');
+                return;
+            }
+            
+            const chatId = `group_${groupName.replace(/\s+/g, '_')}`;
+            const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+            
+            if (chats[chatId]) {
+                alert('❌ Ya existe un grupo con ese nombre');
+                return;
+            }
+            
+            // Create initial message
+            chats[chatId] = [{
+                sender: 'Sistema',
+                text: `Grupo "${groupName}" creado con ${selectedUsers.length} participantes: ${selectedUsers.join(', ')}`,
+                timestamp: new Date().toISOString()
+            }];
+            
+            localStorage.setItem('dolce_chats', JSON.stringify(chats));
+            closeGroupChatModal();
+            loadAdminChats();
+            alert('✅ Chat grupal creado exitosamente');
+        }
+
+        function deleteChat(chatId) {
+            if (confirm(`¿Estás seguro de eliminar este chat?`)) {
+                const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+                delete chats[chatId];
+                localStorage.setItem('dolce_chats', JSON.stringify(chats));
+                loadAdminChats();
+                alert('✅ Chat eliminado exitosamente');
+            }
+        }
+
+        function clearAllChats() {
+            if (confirm('⚠️ ¿Estás seguro de eliminar TODOS los chats? Esta acción no se puede deshacer.')) {
+                localStorage.setItem('dolce_chats', JSON.stringify({}));
+                loadAdminChats();
+                alert('✅ Todos los chats han sido eliminados');
             }
         }
 
@@ -1414,10 +1641,12 @@
                 document.getElementById('eventTime').value = event.time;
                 document.getElementById('eventLocation').value = event.location;
                 document.getElementById('eventDescription').value = event.description;
+                document.getElementById('eventForm').dataset.editEventId = eventId;
             } else {
                 // Create mode
                 document.getElementById('eventModalTitle').textContent = 'Nuevo Evento';
                 document.getElementById('eventForm').reset();
+                delete document.getElementById('eventForm').dataset.editEventId;
             }
         }
 
@@ -1429,23 +1658,42 @@
             e.preventDefault();
             const events = JSON.parse(localStorage.getItem('dolce_events'));
             
+            const editEventId = document.getElementById('eventForm').dataset.editEventId;
+            
             const eventData = {
-                id: 'evt' + Date.now(),
                 name: document.getElementById('eventName').value,
                 date: document.getElementById('eventDate').value,
                 time: document.getElementById('eventTime').value,
                 location: document.getElementById('eventLocation').value,
                 description: document.getElementById('eventDescription').value,
-                musicians: [currentUser.username],
-                status: 'agendado'
+                musicians: editEventId ? events.find(e => e.id === editEventId).musicians : [currentUser.username],
+                status: editEventId ? events.find(e => e.id === editEventId).status : 'agendado'
             };
             
-            events.push(eventData);
+            if (editEventId) {
+                // Edit existing event
+                const eventIndex = events.findIndex(e => e.id === editEventId);
+                if (eventIndex !== -1) {
+                    eventData.id = editEventId;
+                    events[eventIndex] = eventData;
+                }
+            } else {
+                // Create new event
+                eventData.id = 'evt' + Date.now();
+                events.push(eventData);
+            }
+            
             localStorage.setItem('dolce_events', JSON.stringify(events));
             
             closeEventModal();
-            loadUserEvents();
-            alert('✅ Evento creado exitosamente');
+            
+            if (currentUser.role === 'admin') {
+                loadAdminEvents();
+            } else {
+                loadUserEvents();
+            }
+            
+            alert('✅ Evento guardado exitosamente');
         }
 
         function addToGoogleCalendar(eventId) {
@@ -1636,8 +1884,19 @@
         // Instruments Functions
         function loadInstrumentsList() {
             const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
-            const container = document.getElementById('instrumentsList');
+            const container = document.getElementById('adminInstrumentsList');
+            
+            if (!container) {
+                console.error('Container adminInstrumentsList not found');
+                return;
+            }
+            
             container.innerHTML = '';
+            
+            if (instruments.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No hay instrumentos registrados</div>';
+                return;
+            }
             
             instruments.forEach((instrument, index) => {
                 const instrumentCard = document.createElement('div');
@@ -1858,7 +2117,25 @@
         }
 
         function editEvent(eventId) {
-            alert(`Función de edición para evento: ${eventId} (Demo)`);
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const event = events.find(e => e.id === eventId);
+            
+            if (!event) {
+                alert('❌ Evento no encontrado');
+                return;
+            }
+            
+            // Set the form to edit mode
+            document.getElementById('eventModal').classList.remove('hidden');
+            document.getElementById('eventModalTitle').textContent = 'Editar Evento';
+            document.getElementById('eventName').value = event.name;
+            document.getElementById('eventDate').value = event.date;
+            document.getElementById('eventTime').value = event.time;
+            document.getElementById('eventLocation').value = event.location;
+            document.getElementById('eventDescription').value = event.description;
+            
+            // Store the event ID for updating
+            document.getElementById('eventForm').dataset.editEventId = eventId;
         }
 
         function deleteEvent(eventId) {
@@ -1871,5 +2148,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d21fd8c0c5aec5',t:'MTc1NzU0MDg1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d252d976cbaec5',t:'MTc1NzU0Mjk0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
