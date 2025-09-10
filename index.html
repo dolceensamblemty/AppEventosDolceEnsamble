@@ -892,6 +892,8 @@
             try {
                 const users = JSON.parse(localStorage.getItem('dolce_users'));
                 const events = JSON.parse(localStorage.getItem('dolce_events'));
+                const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+                const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
 
                 // Upload users
                 for (const user of users) {
@@ -903,8 +905,23 @@
                     await db.collection('events').doc(event.id).set(event);
                 }
 
+                // Upload chats
+                for (const [chatId, messages] of Object.entries(chats)) {
+                    await db.collection('chats').doc(chatId).set({
+                        chatId: chatId,
+                        messages: messages,
+                        lastUpdated: new Date().toISOString()
+                    });
+                }
+
+                // Upload instruments
+                await db.collection('settings').doc('instruments').set({
+                    list: instruments,
+                    lastUpdated: new Date().toISOString()
+                });
+
                 statusDiv.className = 'mt-4 p-3 rounded-lg bg-green-50 text-green-800';
-                statusDiv.textContent = '✅ Datos sincronizados exitosamente con Firebase';
+                statusDiv.textContent = '✅ Todos los datos sincronizados exitosamente con Firebase (usuarios, eventos, chats e instrumentos)';
             } catch (error) {
                 statusDiv.className = 'mt-4 p-3 rounded-lg bg-red-50 text-red-800';
                 statusDiv.textContent = '❌ Error al sincronizar: ' + error.message;
@@ -932,16 +949,35 @@
                     events.push(doc.data());
                 });
 
+                // Download chats
+                const chatsSnapshot = await db.collection('chats').get();
+                const chats = {};
+                chatsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    chats[data.chatId] = data.messages;
+                });
+
+                // Download instruments
+                const instrumentsDoc = await db.collection('settings').doc('instruments').get();
+                let instruments = defaultInstruments; // fallback to default
+                if (instrumentsDoc.exists) {
+                    instruments = instrumentsDoc.data().list;
+                }
+
                 localStorage.setItem('dolce_users', JSON.stringify(users));
                 localStorage.setItem('dolce_events', JSON.stringify(events));
+                localStorage.setItem('dolce_chats', JSON.stringify(chats));
+                localStorage.setItem('dolce_instruments', JSON.stringify(instruments));
 
                 statusDiv.className = 'mt-4 p-3 rounded-lg bg-green-50 text-green-800';
-                statusDiv.textContent = '✅ Datos descargados exitosamente desde Firebase';
+                statusDiv.textContent = '✅ Todos los datos descargados exitosamente desde Firebase (usuarios, eventos, chats e instrumentos)';
                 
                 // Refresh current view
                 if (currentUser && currentUser.role === 'admin') {
                     loadUsersTable();
                     loadAdminEvents();
+                    loadAdminChats();
+                    loadInstrumentsList();
                 }
             } catch (error) {
                 statusDiv.className = 'mt-4 p-3 rounded-lg bg-red-50 text-red-800';
@@ -1605,7 +1641,7 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             
@@ -1624,6 +1660,17 @@
             
             chats[currentChatId].push(message);
             localStorage.setItem('dolce_chats', JSON.stringify(chats));
+            
+            // Sync to Firebase in real-time
+            try {
+                await db.collection('chats').doc(currentChatId).set({
+                    chatId: currentChatId,
+                    messages: chats[currentChatId],
+                    lastUpdated: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Error syncing message to Firebase:', error);
+            }
             
             input.value = '';
             loadChatMessages();
@@ -2148,5 +2195,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d252d976cbaec5',t:'MTc1NzU0Mjk0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d2628bf34aaec5',t:'MTc1NzU0MzU4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
