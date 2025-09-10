@@ -180,10 +180,7 @@
                 </button>
             </form>
             
-            <div class="mt-6 text-center text-sm text-gray-600">
-                <p>👤 Usuario demo: <strong>maria.violin</strong> | Contraseña: <strong>123456</strong></p>
-                <p>🔧 Admin: <strong>Admin</strong> | Contraseña: <strong>admin123</strong></p>
-            </div>
+
         </div>
     </div>
 
@@ -288,6 +285,19 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Instruments Management -->
+                <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
+                        <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                            <i class="fas fa-plus mr-2"></i>Agregar Instrumento
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="instrumentsList">
+                        <!-- Instruments will be populated here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -315,6 +325,9 @@
                             </button>
                             <button id="adminDataBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
                                 📊 Datos
+                            </button>
+                            <button id="adminInstrumentsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                                🎼 Instrumentos
                             </button>
                         </div>
                         <button id="adminLogoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
@@ -442,6 +455,19 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Instruments Management -->
+                <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
+                        <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                            <i class="fas fa-plus mr-2"></i>Agregar Instrumento
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="instrumentsList">
+                        <!-- Instruments will be populated here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -464,6 +490,19 @@
                     <button id="sendMessageBtn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
                         <i class="fas fa-paper-plane"></i>
                     </button>
+                </div>
+
+                <!-- Instruments Management -->
+                <div id="adminInstrumentsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">🎼 Gestión de Instrumentos</h2>
+                        <button id="addInstrumentBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                            <i class="fas fa-plus mr-2"></i>Agregar Instrumento
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="instrumentsList">
+                        <!-- Instruments will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -492,19 +531,10 @@
                     <input type="tel" id="editPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="+1234567890">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Instrumento</label>
-                    <select id="editInstrument" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
-                        <option value="🎻 Violín">🎻 Violín</option>
-                        <option value="🎹 Piano">🎹 Piano</option>
-                        <option value="🎻 Cello">🎻 Cello</option>
-                        <option value="🎵 Flauta">🎵 Flauta</option>
-                        <option value="🎼 Arpa">🎼 Arpa</option>
-                        <option value="🎸 Guitarra">🎸 Guitarra</option>
-                        <option value="🎤 Soprano">🎤 Soprano</option>
-                        <option value="🎸 Bajo">🎸 Bajo</option>
-                        <option value="🎵 Oboe">🎵 Oboe</option>
-                        <option value="🎺 Trompeta">🎺 Trompeta</option>
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Instrumentos</label>
+                    <div id="instrumentsCheckboxes" class="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                        <!-- Instruments checkboxes will be populated here -->
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
@@ -571,6 +601,36 @@
         </div>
     </div>
 
+    <!-- Instrument Modal -->
+    <div id="instrumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="instrumentModalTitle" class="text-lg font-bold text-gray-800">Agregar Instrumento</h3>
+                <button id="closeInstrumentBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="instrumentForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Emoji</label>
+                    <input type="text" id="instrumentEmoji" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="🎻" maxlength="2" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Instrumento</label>
+                    <input type="text" id="instrumentName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Violín" required>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
+                        Guardar Instrumento
+                    </button>
+                    <button type="button" id="cancelInstrumentBtn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -586,18 +646,28 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Sample Data with phone numbers
+        // Sample Data with phone numbers and multiple instruments
         const sampleUsers = [
-            { username: 'maria.violin', password: '123456', name: 'María González', phone: '+1234567890', instrument: '🎻 Violín', role: 'musician', status: 'active' },
-            { username: 'carlos.piano', password: '123456', name: 'Carlos Rodríguez', phone: '+1234567891', instrument: '🎹 Piano', role: 'musician', status: 'active' },
-            { username: 'ana.cello', password: '123456', name: 'Ana Martínez', phone: '+1234567892', instrument: '🎻 Cello', role: 'musician', status: 'active' },
-            { username: 'luis.flauta', password: '123456', name: 'Luis Hernández', phone: '+1234567893', instrument: '🎵 Flauta', role: 'musician', status: 'active' },
-            { username: 'sofia.arpa', password: '123456', name: 'Sofía López', phone: '+1234567894', instrument: '🎼 Arpa', role: 'musician', status: 'active' },
-            { username: 'diego.guitarra', password: '123456', name: 'Diego Morales', phone: '+1234567895', instrument: '🎸 Guitarra', role: 'musician', status: 'active' },
-            { username: 'elena.soprano', password: '123456', name: 'Elena Ruiz', phone: '+1234567896', instrument: '🎤 Soprano', role: 'musician', status: 'active' },
-            { username: 'miguel.bajo', password: '123456', name: 'Miguel Torres', phone: '+1234567897', instrument: '🎸 Bajo', role: 'musician', status: 'active' },
-            { username: 'laura.oboe', password: '123456', name: 'Laura Jiménez', phone: '+1234567898', instrument: '🎵 Oboe', role: 'musician', status: 'active' },
-            { username: 'pablo.trompeta', password: '123456', name: 'Pablo Vargas', phone: '+1234567899', instrument: '🎺 Trompeta', role: 'musician', status: 'active' }
+            { username: 'maria.violin', password: '123456', name: 'María González', phone: '+1234567890', instruments: ['🎻 Violín', '🎻 Viola'], role: 'musician', status: 'active' },
+            { username: 'carlos.piano', password: '123456', name: 'Carlos Rodríguez', phone: '+1234567891', instruments: ['🎹 Piano', '🎹 Teclado'], role: 'musician', status: 'active' },
+            { username: 'ana.cello', password: '123456', name: 'Ana Martínez', phone: '+1234567892', instruments: ['🎻 Cello'], role: 'musician', status: 'active' },
+            { username: 'luis.flauta', password: '123456', name: 'Luis Hernández', phone: '+1234567893', instruments: ['🎵 Flauta', '🎵 Piccolo'], role: 'musician', status: 'active' },
+            { username: 'sofia.arpa', password: '123456', name: 'Sofía López', phone: '+1234567894', instruments: ['🎼 Arpa'], role: 'musician', status: 'active' },
+            { username: 'diego.guitarra', password: '123456', name: 'Diego Morales', phone: '+1234567895', instruments: ['🎸 Guitarra', '🎸 Guitarra Eléctrica'], role: 'musician', status: 'active' },
+            { username: 'elena.soprano', password: '123456', name: 'Elena Ruiz', phone: '+1234567896', instruments: ['🎤 Soprano'], role: 'musician', status: 'active' },
+            { username: 'miguel.bajo', password: '123456', name: 'Miguel Torres', phone: '+1234567897', instruments: ['🎸 Bajo', '🎸 Contrabajo'], role: 'musician', status: 'active' },
+            { username: 'laura.oboe', password: '123456', name: 'Laura Jiménez', phone: '+1234567898', instruments: ['🎵 Oboe'], role: 'musician', status: 'active' },
+            { username: 'pablo.trompeta', password: '123456', name: 'Pablo Vargas', phone: '+1234567899', instruments: ['🎺 Trompeta', '🎺 Corneta'], role: 'musician', status: 'active' }
+        ];
+
+        // Default instruments list
+        const defaultInstruments = [
+            '🎻 Violín', '🎻 Viola', '🎻 Cello', '🎸 Contrabajo',
+            '🎹 Piano', '🎹 Teclado', '🎼 Arpa',
+            '🎵 Flauta', '🎵 Piccolo', '🎵 Oboe', '🎵 Clarinete', '🎵 Fagot',
+            '🎺 Trompeta', '🎺 Corneta', '🎺 Trombón', '🎺 Tuba',
+            '🎸 Guitarra', '🎸 Guitarra Eléctrica', '🎸 Bajo',
+            '🥁 Batería', '🥁 Percusión', '🎤 Soprano', '🎤 Alto', '🎤 Tenor', '🎤 Bajo'
         ];
 
         const sampleEvents = [
@@ -657,6 +727,9 @@
             if (!localStorage.getItem('dolce_chats')) {
                 localStorage.setItem('dolce_chats', JSON.stringify({}));
             }
+            if (!localStorage.getItem('dolce_instruments')) {
+                localStorage.setItem('dolce_instruments', JSON.stringify(defaultInstruments));
+            }
         }
 
         function setupEventListeners() {
@@ -680,8 +753,10 @@
             document.getElementById('adminEventsBtn').addEventListener('click', () => showAdminPanel('events'));
             document.getElementById('adminCalendarBtn').addEventListener('click', () => showAdminPanel('calendar'));
             document.getElementById('adminDataBtn').addEventListener('click', () => showAdminPanel('data'));
+            document.getElementById('adminInstrumentsBtn').addEventListener('click', () => showAdminPanel('instruments'));
             document.getElementById('addUserBtn').addEventListener('click', () => openUserModal());
             document.getElementById('addEventBtn').addEventListener('click', () => openEventModal());
+            document.getElementById('addInstrumentBtn').addEventListener('click', () => openInstrumentModal());
             
             // Firebase sync
             document.getElementById('syncToFirebaseBtn').addEventListener('click', syncToFirebase);
@@ -699,6 +774,8 @@
             document.getElementById('cancelEventBtn').addEventListener('click', closeEventModal);
             document.getElementById('closeUserBtn').addEventListener('click', closeUserModal);
             document.getElementById('cancelUserBtn').addEventListener('click', closeUserModal);
+            document.getElementById('closeInstrumentBtn').addEventListener('click', closeInstrumentModal);
+            document.getElementById('cancelInstrumentBtn').addEventListener('click', closeInstrumentModal);
             document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
             document.getElementById('chatInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();
@@ -709,6 +786,9 @@
             
             // User form
             document.getElementById('userForm').addEventListener('submit', handleUserSubmit);
+            
+            // Instrument form
+            document.getElementById('instrumentForm').addEventListener('submit', handleInstrumentSubmit);
             
             // Calendar navigation
             document.getElementById('prevMonth').addEventListener('click', () => navigateMonth(-1));
@@ -1013,7 +1093,7 @@
 
         function showAdminPanel(panel) {
             // Remove active class from all buttons
-            document.querySelectorAll('#adminUsersBtn, #adminEventsBtn, #adminCalendarBtn, #adminDataBtn').forEach(btn => {
+            document.querySelectorAll('#adminUsersBtn, #adminEventsBtn, #adminCalendarBtn, #adminDataBtn, #adminInstrumentsBtn').forEach(btn => {
                 btn.classList.remove('bg-white', 'bg-opacity-30');
                 btn.classList.add('bg-white', 'bg-opacity-20');
             });
@@ -1023,6 +1103,7 @@
             document.getElementById('adminEventsPanel').classList.add('hidden');
             document.getElementById('adminCalendarPanel').classList.add('hidden');
             document.getElementById('adminDataPanel').classList.add('hidden');
+            document.getElementById('adminInstrumentsPanel').classList.add('hidden');
             
             // Show selected panel and highlight button
             switch(panel) {
@@ -1049,6 +1130,12 @@
                     document.getElementById('adminDataBtn').classList.remove('bg-opacity-20');
                     document.getElementById('adminDataBtn').classList.add('bg-opacity-30');
                     break;
+                case 'instruments':
+                    document.getElementById('adminInstrumentsPanel').classList.remove('hidden');
+                    document.getElementById('adminInstrumentsBtn').classList.remove('bg-opacity-20');
+                    document.getElementById('adminInstrumentsBtn').classList.add('bg-opacity-30');
+                    loadInstrumentsList();
+                    break;
             }
         }
 
@@ -1069,7 +1156,7 @@
                             </div>
                             <div>
                                 <p class="font-medium text-gray-800">${user.name}</p>
-                                <p class="text-sm text-gray-600">${user.instrument}</p>
+                                <p class="text-sm text-gray-600">${user.instruments ? user.instruments.join(', ') : 'Sin instrumentos'}</p>
                             </div>
                         </div>
                         <button onclick="sendWhatsApp('${user.phone}', '${user.name}')" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition" title="Enviar WhatsApp">
@@ -1180,7 +1267,7 @@
                 row.innerHTML = `
                     <td class="px-4 py-3 text-sm text-gray-900">${user.username}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">${user.name}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${user.instrument}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.instruments ? user.instruments.join(', ') : 'Sin instrumentos'}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">${user.phone || 'N/A'}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 text-xs rounded-full ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
@@ -1546,12 +1633,126 @@
             return months[month];
         }
 
+        // Instruments Functions
+        function loadInstrumentsList() {
+            const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
+            const container = document.getElementById('instrumentsList');
+            container.innerHTML = '';
+            
+            instruments.forEach((instrument, index) => {
+                const instrumentCard = document.createElement('div');
+                instrumentCard.className = 'bg-gray-50 p-4 rounded-lg border hover:shadow-md transition';
+                instrumentCard.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">${instrument.split(' ')[0]}</span>
+                            <span class="font-medium text-gray-800">${instrument.split(' ').slice(1).join(' ')}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editInstrument(${index})" class="text-blue-600 hover:text-blue-800 text-sm">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="deleteInstrument(${index})" class="text-red-600 hover:text-red-800 text-sm">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(instrumentCard);
+            });
+        }
+
+        function openInstrumentModal(index = null) {
+            document.getElementById('instrumentModal').classList.remove('hidden');
+            
+            if (index !== null) {
+                // Edit mode
+                const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
+                const instrument = instruments[index];
+                const parts = instrument.split(' ');
+                document.getElementById('instrumentModalTitle').textContent = 'Editar Instrumento';
+                document.getElementById('instrumentEmoji').value = parts[0];
+                document.getElementById('instrumentName').value = parts.slice(1).join(' ');
+                document.getElementById('instrumentForm').dataset.editIndex = index;
+            } else {
+                // Create mode
+                document.getElementById('instrumentModalTitle').textContent = 'Agregar Instrumento';
+                document.getElementById('instrumentForm').reset();
+                delete document.getElementById('instrumentForm').dataset.editIndex;
+            }
+        }
+
+        function closeInstrumentModal() {
+            document.getElementById('instrumentModal').classList.add('hidden');
+        }
+
+        function handleInstrumentSubmit(e) {
+            e.preventDefault();
+            const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
+            
+            const emoji = document.getElementById('instrumentEmoji').value;
+            const name = document.getElementById('instrumentName').value;
+            const fullInstrument = `${emoji} ${name}`;
+            
+            const editIndex = document.getElementById('instrumentForm').dataset.editIndex;
+            
+            if (editIndex !== undefined) {
+                // Edit existing instrument
+                instruments[parseInt(editIndex)] = fullInstrument;
+            } else {
+                // Add new instrument
+                if (instruments.includes(fullInstrument)) {
+                    alert('❌ Este instrumento ya existe');
+                    return;
+                }
+                instruments.push(fullInstrument);
+            }
+            
+            localStorage.setItem('dolce_instruments', JSON.stringify(instruments));
+            closeInstrumentModal();
+            loadInstrumentsList();
+            alert('✅ Instrumento guardado exitosamente');
+        }
+
+        function editInstrument(index) {
+            openInstrumentModal(index);
+        }
+
+        function deleteInstrument(index) {
+            const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
+            const instrument = instruments[index];
+            
+            if (confirm(`¿Estás seguro de eliminar el instrumento "${instrument}"?`)) {
+                instruments.splice(index, 1);
+                localStorage.setItem('dolce_instruments', JSON.stringify(instruments));
+                loadInstrumentsList();
+                alert('✅ Instrumento eliminado exitosamente');
+            }
+        }
+
+        function loadInstrumentsCheckboxes() {
+            const instruments = JSON.parse(localStorage.getItem('dolce_instruments'));
+            const container = document.getElementById('instrumentsCheckboxes');
+            container.innerHTML = '';
+            
+            instruments.forEach(instrument => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'flex items-center space-x-2';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="inst_${instrument.replace(/\s+/g, '_')}" value="${instrument}" class="rounded">
+                    <label for="inst_${instrument.replace(/\s+/g, '_')}" class="text-sm text-gray-700">${instrument}</label>
+                `;
+                container.appendChild(checkboxDiv);
+            });
+        }
+
         // User Modal Functions
         let editingUsername = null;
 
         function openUserModal(username = null) {
             editingUsername = username;
             document.getElementById('userModal').classList.remove('hidden');
+            loadInstrumentsCheckboxes();
             
             if (username) {
                 // Edit mode
@@ -1562,9 +1763,17 @@
                 document.getElementById('editUsername').disabled = true;
                 document.getElementById('editName').value = user.name;
                 document.getElementById('editPhone').value = user.phone || '';
-                document.getElementById('editInstrument').value = user.instrument;
                 document.getElementById('editPassword').value = '';
                 document.getElementById('editStatus').value = user.status;
+                
+                // Set selected instruments
+                setTimeout(() => {
+                    const userInstruments = user.instruments || [];
+                    userInstruments.forEach(instrument => {
+                        const checkbox = document.getElementById(`inst_${instrument.replace(/\s+/g, '_')}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }, 100);
             } else {
                 // Create mode
                 document.getElementById('userModalTitle').textContent = 'Agregar Usuario';
@@ -1582,11 +1791,23 @@
             e.preventDefault();
             const users = JSON.parse(localStorage.getItem('dolce_users'));
             
+            // Get selected instruments
+            const selectedInstruments = [];
+            const checkboxes = document.querySelectorAll('#instrumentsCheckboxes input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                selectedInstruments.push(checkbox.value);
+            });
+            
+            if (selectedInstruments.length === 0) {
+                alert('❌ Debe seleccionar al menos un instrumento');
+                return;
+            }
+            
             const userData = {
                 username: document.getElementById('editUsername').value,
                 name: document.getElementById('editName').value,
                 phone: document.getElementById('editPhone').value,
-                instrument: document.getElementById('editInstrument').value,
+                instruments: selectedInstruments,
                 status: document.getElementById('editStatus').value,
                 role: 'musician'
             };
@@ -1650,5 +1871,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d1f6bc017baec5',t:'MTc1NzUzOTE2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d21fd8c0c5aec5',t:'MTc1NzU0MDg1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
