@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolce Ensamble - Coordinación Musical</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-bg-dark {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        }
+        
+        .chat-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .calendar-day {
+            min-height: 100px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .calendar-day.dark {
+            border-color: #374151;
+        }
+        
+        .event-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        
+        /* Dark theme styles */
+        .dark {
+            background-color: #111827;
+            color: #f9fafb;
+        }
+        
+        .dark .bg-white {
+            background-color: #1f2937 !important;
+            color: #f9fafb;
+        }
+        
+        .dark .bg-gray-50 {
+            background-color: #111827 !important;
+        }
+        
+        .dark .bg-gray-100 {
+            background-color: #374151 !important;
+        }
+        
+        .dark .text-gray-800 {
+            color: #f9fafb !important;
+        }
+        
+        .dark .text-gray-600 {
+            color: #d1d5db !important;
+        }
+        
+        .dark .text-gray-500 {
+            color: #9ca3af !important;
+        }
+        
+        .dark .border-gray-300 {
+            border-color: #4b5563 !important;
+        }
+        
+        .dark .border-gray-200 {
+            border-color: #374151 !important;
+        }
+        
+        .dark .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: #4f46e5;
+        }
+        
+        .status-agendado { background-color: #dbeafe; color: #1e40af; }
+        .status-en-progreso { background-color: #fef3c7; color: #d97706; }
+        .status-realizado { background-color: #d1fae5; color: #065f46; }
+        .status-cancelado { background-color: #fee2e2; color: #dc2626; }
+        
+        .dark .status-agendado { background-color: #1e3a8a; color: #93c5fd; }
+        .dark .status-en-progreso { background-color: #92400e; color: #fcd34d; }
+        .dark .status-realizado { background-color: #064e3b; color: #6ee7b7; }
+        .dark .status-cancelado { background-color: #991b1b; color: #fca5a5; }
+    </style>
+</head>
+<body class="bg-gray-50 transition-colors duration-300">
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle" class="theme-toggle">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">🎼</div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Dolce Ensamble</h1>
+                <p class="text-gray-600">Sistema de Coordinación Musical</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ingresa tu usuario" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ingresa tu contraseña" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition duration-300 font-medium">
+                    Iniciar Sesión 🎵
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>👤 Usuario demo: <strong>maria.violin</strong> | Contraseña: <strong>123456</strong></p>
+                <p>🔧 Admin: <strong>Admin</strong> | Contraseña: <strong>admin123</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardScreen" class="hidden min-h-screen bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg border-b">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl">🎼</span>
+                        <h1 class="text-xl font-bold text-gray-800">Dolce Ensamble</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span id="userWelcome" class="text-gray-600"></span>
+                        <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column - Events & Calendar -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">🚀 Acciones Rápidas</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button id="newEventBtn" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition pulse-animation">
+                                <i class="fas fa-plus mb-2"></i>
+                                <div>Nuevo Evento</div>
+                            </button>
+                            <button id="chatAdminBtn" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600 transition">
+                                <i class="fas fa-headset mb-2"></i>
+                                <div>Chat con Admin</div>
+                            </button>
+                            <button id="viewCalendarBtn" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600 transition">
+                                <i class="fas fa-calendar mb-2"></i>
+                                <div>Ver Calendario</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- My Events -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">🎭 Mis Próximos Eventos</h2>
+                        <div id="userEvents" class="space-y-4">
+                            <!-- Events will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Calendar View -->
+                    <div id="calendarView" class="bg-white rounded-xl shadow-lg p-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">📅 Mi Calendario</h2>
+                            <div class="flex space-x-2">
+                                <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">←</button>
+                                <span id="currentMonth" class="px-4 py-1 font-medium"></span>
+                                <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">→</button>
+                            </div>
+                        </div>
+                        <div id="calendar" class="grid grid-cols-7 gap-1">
+                            <!-- Calendar will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Chat & Notifications -->
+                <div class="space-y-6">
+                    <!-- Team Members -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">👥 Miembros del Equipo</h2>
+                        <div id="teamMembers" class="space-y-3">
+                            <!-- Team members will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Active Chats -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">💬 Chats Activos</h2>
+                        <div id="activeChats" class="space-y-3">
+                            <!-- Chats will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">🔔 Notificaciones</h2>
+                        <div id="notifications" class="space-y-3">
+                            <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                <p class="text-sm text-blue-800">Nuevo evento asignado: Boda García</p>
+                                <p class="text-xs text-blue-600 mt-1">Hace 2 horas</p>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                                <p class="text-sm text-green-800">Mensaje en chat grupal "Evento Navideño"</p>
+                                <p class="text-xs text-green-600 mt-1">Hace 1 día</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminScreen" class="hidden min-h-screen bg-gray-50">
+        <!-- Admin Navigation -->
+        <nav class="bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl">👑</span>
+                        <h1 class="text-xl font-bold text-white">Panel de Administrador</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex space-x-2">
+                            <button id="adminUsersBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                                👥 Usuarios
+                            </button>
+                            <button id="adminEventsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                                📅 Eventos
+                            </button>
+                            <button id="adminCalendarBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                                🗓️ Calendario
+                            </button>
+                            <button id="adminDataBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                                📊 Datos
+                            </button>
+                        </div>
+                        <button id="adminLogoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Admin Content -->
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- Users Management -->
+            <div id="adminUsersPanel" class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">👥 Gestión de Usuarios</h2>
+                    <button id="addUserBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                        <i class="fas fa-plus mr-2"></i>Agregar Usuario
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Usuario</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Nombre</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Instrumento</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Teléfono</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Estado</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable" class="divide-y divide-gray-200">
+                            <!-- Users will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Events Management -->
+            <div id="adminEventsPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">📅 Gestión de Eventos</h2>
+                    <button id="addEventBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-plus mr-2"></i>Crear Evento
+                    </button>
+                </div>
+                <div id="adminEventsList" class="space-y-4">
+                    <!-- Events will be populated here -->
+                </div>
+            </div>
+
+            <!-- Admin Calendar -->
+            <div id="adminCalendarPanel" class="hidden bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">🗓️ Calendario General</h2>
+                    <div class="flex space-x-2">
+                        <button id="adminPrevMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">←</button>
+                        <span id="adminCurrentMonth" class="px-4 py-1 font-medium"></span>
+                        <button id="adminNextMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">→</button>
+                    </div>
+                </div>
+                <div id="adminCalendar" class="grid grid-cols-7 gap-1">
+                    <!-- Calendar will be populated here -->
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div id="adminDataPanel" class="hidden space-y-6">
+                <!-- Firebase Sync -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">🔥 Sincronización Firebase</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="syncToFirebaseBtn" class="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>Sincronizar con Firebase
+                        </button>
+                        <button id="syncFromFirebaseBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-cloud-download-alt mr-2"></i>Descargar de Firebase
+                        </button>
+                    </div>
+                    <div id="syncStatus" class="mt-4 p-3 rounded-lg hidden">
+                        <!-- Sync status messages -->
+                    </div>
+                </div>
+
+                <!-- CSV Management -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 Gestión de Datos CSV</h2>
+                    
+                    <!-- Export Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-3">📤 Exportar Datos</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button id="exportUsersBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                                <i class="fas fa-download mr-2"></i>Exportar Usuarios CSV
+                            </button>
+                            <button id="exportEventsBtn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                                <i class="fas fa-download mr-2"></i>Exportar Eventos CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Import Section -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-3">📥 Importar Datos</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Importar Usuarios</label>
+                                <div class="flex space-x-2">
+                                    <input type="file" id="importUsersFile" accept=".csv" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                                    <button id="importUsersBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                                        <i class="fas fa-upload mr-2"></i>Importar
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Importar Eventos</label>
+                                <div class="flex space-x-2">
+                                    <input type="file" id="importEventsFile" accept=".csv" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                                    <button id="importEventsBtn" class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition">
+                                        <i class="fas fa-upload mr-2"></i>Importar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl h-96 flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="chatTitle" class="text-lg font-bold text-gray-800"></h3>
+                <button id="closeChatBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-3">
+                <!-- Messages will be populated here -->
+            </div>
+            <div class="p-4 border-t">
+                <div class="flex space-x-2">
+                    <input type="text" id="chatInput" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Escribe tu mensaje...">
+                    <button id="sendMessageBtn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="userModalTitle" class="text-lg font-bold text-gray-800">Editar Usuario</h3>
+                <button id="closeUserBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="userForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+                    <input type="text" id="editUsername" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                    <input type="text" id="editName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                    <input type="tel" id="editPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="+1234567890">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Instrumento</label>
+                    <select id="editInstrument" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                        <option value="🎻 Violín">🎻 Violín</option>
+                        <option value="🎹 Piano">🎹 Piano</option>
+                        <option value="🎻 Cello">🎻 Cello</option>
+                        <option value="🎵 Flauta">🎵 Flauta</option>
+                        <option value="🎼 Arpa">🎼 Arpa</option>
+                        <option value="🎸 Guitarra">🎸 Guitarra</option>
+                        <option value="🎤 Soprano">🎤 Soprano</option>
+                        <option value="🎸 Bajo">🎸 Bajo</option>
+                        <option value="🎵 Oboe">🎵 Oboe</option>
+                        <option value="🎺 Trompeta">🎺 Trompeta</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                    <input type="password" id="editPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Dejar vacío para mantener actual">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                    <select id="editStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                        <option value="active">✅ Activo</option>
+                        <option value="inactive">❌ Inactivo</option>
+                    </select>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
+                        Guardar Cambios
+                    </button>
+                    <button type="button" id="cancelUserBtn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="eventModalTitle" class="text-lg font-bold text-gray-800">Nuevo Evento</h3>
+                <button id="closeEventBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="eventForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Evento</label>
+                    <input type="text" id="eventName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+                    <input type="date" id="eventDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora</label>
+                    <input type="time" id="eventTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
+                    <input type="text" id="eventLocation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <textarea id="eventDescription" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" rows="3"></textarea>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
+                        Guardar Evento
+                    </button>
+                    <button type="button" id="cancelEventBtn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBk1uj9fzcFK184rxaZFl02uWjj3TO2BeY",
+            authDomain: "appeventosdolceensamble.firebaseapp.com",
+            projectId: "appeventosdolceensamble",
+            storageBucket: "appeventosdolceensamble.firebasestorage.app",
+            messagingSenderId: "835323350712",
+            appId: "1:835323350712:web:e37907cd44f01375b52e4d"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Sample Data with phone numbers
+        const sampleUsers = [
+            { username: 'maria.violin', password: '123456', name: 'María González', phone: '+1234567890', instrument: '🎻 Violín', role: 'musician', status: 'active' },
+            { username: 'carlos.piano', password: '123456', name: 'Carlos Rodríguez', phone: '+1234567891', instrument: '🎹 Piano', role: 'musician', status: 'active' },
+            { username: 'ana.cello', password: '123456', name: 'Ana Martínez', phone: '+1234567892', instrument: '🎻 Cello', role: 'musician', status: 'active' },
+            { username: 'luis.flauta', password: '123456', name: 'Luis Hernández', phone: '+1234567893', instrument: '🎵 Flauta', role: 'musician', status: 'active' },
+            { username: 'sofia.arpa', password: '123456', name: 'Sofía López', phone: '+1234567894', instrument: '🎼 Arpa', role: 'musician', status: 'active' },
+            { username: 'diego.guitarra', password: '123456', name: 'Diego Morales', phone: '+1234567895', instrument: '🎸 Guitarra', role: 'musician', status: 'active' },
+            { username: 'elena.soprano', password: '123456', name: 'Elena Ruiz', phone: '+1234567896', instrument: '🎤 Soprano', role: 'musician', status: 'active' },
+            { username: 'miguel.bajo', password: '123456', name: 'Miguel Torres', phone: '+1234567897', instrument: '🎸 Bajo', role: 'musician', status: 'active' },
+            { username: 'laura.oboe', password: '123456', name: 'Laura Jiménez', phone: '+1234567898', instrument: '🎵 Oboe', role: 'musician', status: 'active' },
+            { username: 'pablo.trompeta', password: '123456', name: 'Pablo Vargas', phone: '+1234567899', instrument: '🎺 Trompeta', role: 'musician', status: 'active' }
+        ];
+
+        const sampleEvents = [
+            {
+                id: 'evt1',
+                name: 'Boda García-Pérez',
+                date: '2024-01-15',
+                time: '18:00',
+                location: 'Jardín Botánico',
+                description: 'Ceremonia y recepción',
+                musicians: ['maria.violin', 'carlos.piano', 'ana.cello'],
+                status: 'agendado'
+            },
+            {
+                id: 'evt2',
+                name: 'Evento Corporativo Tech',
+                date: '2024-01-20',
+                time: '19:30',
+                location: 'Hotel Marriott',
+                description: 'Cena de gala empresarial',
+                musicians: ['sofia.arpa', 'diego.guitarra', 'elena.soprano'],
+                status: 'en-progreso'
+            },
+            {
+                id: 'evt3',
+                name: 'Quinceañera Isabella',
+                date: '2024-01-25',
+                time: '20:00',
+                location: 'Salón Crystal',
+                description: 'Celebración de 15 años',
+                musicians: ['luis.flauta', 'miguel.bajo', 'laura.oboe'],
+                status: 'realizado'
+            }
+        ];
+
+        // Global Variables
+        let currentUser = null;
+        let currentDate = new Date();
+        let currentChatId = null;
+        let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            applyTheme();
+        });
+
+        function initializeApp() {
+            // Initialize sample data in localStorage if not exists
+            if (!localStorage.getItem('dolce_users')) {
+                localStorage.setItem('dolce_users', JSON.stringify(sampleUsers));
+            }
+            if (!localStorage.getItem('dolce_events')) {
+                localStorage.setItem('dolce_events', JSON.stringify(sampleEvents));
+            }
+            if (!localStorage.getItem('dolce_chats')) {
+                localStorage.setItem('dolce_chats', JSON.stringify({}));
+            }
+        }
+
+        function setupEventListeners() {
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Login
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('adminLogoutBtn').addEventListener('click', handleLogout);
+            
+            // Dashboard actions
+            document.getElementById('newEventBtn').addEventListener('click', () => openEventModal());
+            document.getElementById('chatAdminBtn').addEventListener('click', () => openChat('admin', 'Chat con Administrador'));
+            document.getElementById('viewCalendarBtn').addEventListener('click', toggleCalendarView);
+            
+            // Admin panel
+            document.getElementById('adminUsersBtn').addEventListener('click', () => showAdminPanel('users'));
+            document.getElementById('adminEventsBtn').addEventListener('click', () => showAdminPanel('events'));
+            document.getElementById('adminCalendarBtn').addEventListener('click', () => showAdminPanel('calendar'));
+            document.getElementById('adminDataBtn').addEventListener('click', () => showAdminPanel('data'));
+            document.getElementById('addUserBtn').addEventListener('click', () => openUserModal());
+            document.getElementById('addEventBtn').addEventListener('click', () => openEventModal());
+            
+            // Firebase sync
+            document.getElementById('syncToFirebaseBtn').addEventListener('click', syncToFirebase);
+            document.getElementById('syncFromFirebaseBtn').addEventListener('click', syncFromFirebase);
+            
+            // CSV functions
+            document.getElementById('exportUsersBtn').addEventListener('click', exportUsersCSV);
+            document.getElementById('exportEventsBtn').addEventListener('click', exportEventsCSV);
+            document.getElementById('importUsersBtn').addEventListener('click', importUsersCSV);
+            document.getElementById('importEventsBtn').addEventListener('click', importEventsCSV);
+            
+            // Modals
+            document.getElementById('closeChatBtn').addEventListener('click', closeChat);
+            document.getElementById('closeEventBtn').addEventListener('click', closeEventModal);
+            document.getElementById('cancelEventBtn').addEventListener('click', closeEventModal);
+            document.getElementById('closeUserBtn').addEventListener('click', closeUserModal);
+            document.getElementById('cancelUserBtn').addEventListener('click', closeUserModal);
+            document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            // Event form
+            document.getElementById('eventForm').addEventListener('submit', handleEventSubmit);
+            
+            // User form
+            document.getElementById('userForm').addEventListener('submit', handleUserSubmit);
+            
+            // Calendar navigation
+            document.getElementById('prevMonth').addEventListener('click', () => navigateMonth(-1));
+            document.getElementById('nextMonth').addEventListener('click', () => navigateMonth(1));
+            document.getElementById('adminPrevMonth').addEventListener('click', () => navigateAdminMonth(-1));
+            document.getElementById('adminNextMonth').addEventListener('click', () => navigateAdminMonth(1));
+        }
+
+        // Theme Functions
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            localStorage.setItem('darkTheme', isDarkTheme);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (isDarkTheme) {
+                body.classList.add('dark');
+                themeIcon.className = 'fas fa-sun';
+                
+                // Update login screen gradient
+                const loginScreen = document.getElementById('loginScreen');
+                if (loginScreen) {
+                    loginScreen.classList.remove('gradient-bg');
+                    loginScreen.classList.add('gradient-bg-dark');
+                }
+            } else {
+                body.classList.remove('dark');
+                themeIcon.className = 'fas fa-moon';
+                
+                // Update login screen gradient
+                const loginScreen = document.getElementById('loginScreen');
+                if (loginScreen) {
+                    loginScreen.classList.remove('gradient-bg-dark');
+                    loginScreen.classList.add('gradient-bg');
+                }
+            }
+        }
+
+        // Firebase Functions
+        async function syncToFirebase() {
+            const statusDiv = document.getElementById('syncStatus');
+            statusDiv.className = 'mt-4 p-3 rounded-lg bg-blue-50 text-blue-800';
+            statusDiv.textContent = '🔄 Sincronizando con Firebase...';
+            statusDiv.classList.remove('hidden');
+
+            try {
+                const users = JSON.parse(localStorage.getItem('dolce_users'));
+                const events = JSON.parse(localStorage.getItem('dolce_events'));
+
+                // Upload users
+                for (const user of users) {
+                    await db.collection('users').doc(user.username).set(user);
+                }
+
+                // Upload events
+                for (const event of events) {
+                    await db.collection('events').doc(event.id).set(event);
+                }
+
+                statusDiv.className = 'mt-4 p-3 rounded-lg bg-green-50 text-green-800';
+                statusDiv.textContent = '✅ Datos sincronizados exitosamente con Firebase';
+            } catch (error) {
+                statusDiv.className = 'mt-4 p-3 rounded-lg bg-red-50 text-red-800';
+                statusDiv.textContent = '❌ Error al sincronizar: ' + error.message;
+            }
+        }
+
+        async function syncFromFirebase() {
+            const statusDiv = document.getElementById('syncStatus');
+            statusDiv.className = 'mt-4 p-3 rounded-lg bg-blue-50 text-blue-800';
+            statusDiv.textContent = '🔄 Descargando desde Firebase...';
+            statusDiv.classList.remove('hidden');
+
+            try {
+                // Download users
+                const usersSnapshot = await db.collection('users').get();
+                const users = [];
+                usersSnapshot.forEach(doc => {
+                    users.push(doc.data());
+                });
+
+                // Download events
+                const eventsSnapshot = await db.collection('events').get();
+                const events = [];
+                eventsSnapshot.forEach(doc => {
+                    events.push(doc.data());
+                });
+
+                localStorage.setItem('dolce_users', JSON.stringify(users));
+                localStorage.setItem('dolce_events', JSON.stringify(events));
+
+                statusDiv.className = 'mt-4 p-3 rounded-lg bg-green-50 text-green-800';
+                statusDiv.textContent = '✅ Datos descargados exitosamente desde Firebase';
+                
+                // Refresh current view
+                if (currentUser && currentUser.role === 'admin') {
+                    loadUsersTable();
+                    loadAdminEvents();
+                }
+            } catch (error) {
+                statusDiv.className = 'mt-4 p-3 rounded-lg bg-red-50 text-red-800';
+                statusDiv.textContent = '❌ Error al descargar: ' + error.message;
+            }
+        }
+
+        // CSV Functions
+        function exportUsersCSV() {
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const csvContent = [
+                ['Username', 'Name', 'Phone', 'Instrument', 'Status', 'Role'].join(','),
+                ...users.map(user => [
+                    user.username,
+                    user.name,
+                    user.phone || '',
+                    user.instrument,
+                    user.status,
+                    user.role
+                ].join(','))
+            ].join('\n');
+
+            downloadCSV(csvContent, 'usuarios_dolce_ensamble.csv');
+        }
+
+        function exportEventsCSV() {
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const csvContent = [
+                ['ID', 'Name', 'Date', 'Time', 'Location', 'Description', 'Musicians', 'Status'].join(','),
+                ...events.map(event => [
+                    event.id,
+                    event.name,
+                    event.date,
+                    event.time,
+                    event.location,
+                    event.description,
+                    event.musicians.join(';'),
+                    event.status
+                ].join(','))
+            ].join('\n');
+
+            downloadCSV(csvContent, 'eventos_dolce_ensamble.csv');
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function importUsersCSV() {
+            const fileInput = document.getElementById('importUsersFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('❌ Por favor selecciona un archivo CSV');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    const headers = lines[0].split(',');
+                    const users = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        if (lines[i].trim()) {
+                            const values = lines[i].split(',');
+                            const user = {
+                                username: values[0],
+                                name: values[1],
+                                phone: values[2],
+                                instrument: values[3],
+                                status: values[4],
+                                role: values[5] || 'musician',
+                                password: '123456' // Default password
+                            };
+                            users.push(user);
+                        }
+                    }
+
+                    localStorage.setItem('dolce_users', JSON.stringify(users));
+                    loadUsersTable();
+                    alert('✅ Usuarios importados exitosamente');
+                } catch (error) {
+                    alert('❌ Error al importar archivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function importEventsCSV() {
+            const fileInput = document.getElementById('importEventsFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('❌ Por favor selecciona un archivo CSV');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    const headers = lines[0].split(',');
+                    const events = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        if (lines[i].trim()) {
+                            const values = lines[i].split(',');
+                            const event = {
+                                id: values[0],
+                                name: values[1],
+                                date: values[2],
+                                time: values[3],
+                                location: values[4],
+                                description: values[5],
+                                musicians: values[6] ? values[6].split(';') : [],
+                                status: values[7] || 'agendado'
+                            };
+                            events.push(event);
+                        }
+                    }
+
+                    localStorage.setItem('dolce_events', JSON.stringify(events));
+                    loadAdminEvents();
+                    alert('✅ Eventos importados exitosamente');
+                } catch (error) {
+                    alert('❌ Error al importar archivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // WhatsApp Function
+        function sendWhatsApp(phone, name) {
+            if (!phone) {
+                alert('❌ Este usuario no tiene teléfono registrado');
+                return;
+            }
+            
+            const message = encodeURIComponent(`¡Hola ${name}! Te escribo desde Dolce Ensamble. 🎼`);
+            const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (username === 'Admin' && password === 'admin123') {
+                currentUser = { username: 'Admin', role: 'admin', name: 'Administrador' };
+                showAdminScreen();
+            } else if (user) {
+                currentUser = user;
+                showDashboard();
+            } else {
+                alert('❌ Usuario o contraseña incorrectos');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.remove('hidden');
+            document.getElementById('userWelcome').textContent = `¡Hola, ${currentUser.name}! 👋`;
+            
+            loadUserEvents();
+            loadTeamMembers();
+            loadActiveChats();
+            renderCalendar();
+        }
+
+        function showAdminScreen() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.remove('hidden');
+            showAdminPanel('users');
+        }
+
+        function showAdminPanel(panel) {
+            // Remove active class from all buttons
+            document.querySelectorAll('#adminUsersBtn, #adminEventsBtn, #adminCalendarBtn, #adminDataBtn').forEach(btn => {
+                btn.classList.remove('bg-white', 'bg-opacity-30');
+                btn.classList.add('bg-white', 'bg-opacity-20');
+            });
+            
+            // Hide all panels
+            document.getElementById('adminUsersPanel').classList.add('hidden');
+            document.getElementById('adminEventsPanel').classList.add('hidden');
+            document.getElementById('adminCalendarPanel').classList.add('hidden');
+            document.getElementById('adminDataPanel').classList.add('hidden');
+            
+            // Show selected panel and highlight button
+            switch(panel) {
+                case 'users':
+                    document.getElementById('adminUsersPanel').classList.remove('hidden');
+                    document.getElementById('adminUsersBtn').classList.remove('bg-opacity-20');
+                    document.getElementById('adminUsersBtn').classList.add('bg-opacity-30');
+                    loadUsersTable();
+                    break;
+                case 'events':
+                    document.getElementById('adminEventsPanel').classList.remove('hidden');
+                    document.getElementById('adminEventsBtn').classList.remove('bg-opacity-20');
+                    document.getElementById('adminEventsBtn').classList.add('bg-opacity-30');
+                    loadAdminEvents();
+                    break;
+                case 'calendar':
+                    document.getElementById('adminCalendarPanel').classList.remove('hidden');
+                    document.getElementById('adminCalendarBtn').classList.remove('bg-opacity-20');
+                    document.getElementById('adminCalendarBtn').classList.add('bg-opacity-30');
+                    renderAdminCalendar();
+                    break;
+                case 'data':
+                    document.getElementById('adminDataPanel').classList.remove('hidden');
+                    document.getElementById('adminDataBtn').classList.remove('bg-opacity-20');
+                    document.getElementById('adminDataBtn').classList.add('bg-opacity-30');
+                    break;
+            }
+        }
+
+        function loadTeamMembers() {
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const otherUsers = users.filter(user => user.username !== currentUser.username);
+            const container = document.getElementById('teamMembers');
+            container.innerHTML = '';
+            
+            otherUsers.forEach(user => {
+                const memberCard = document.createElement('div');
+                memberCard.className = 'p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition';
+                memberCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                ${user.name.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">${user.name}</p>
+                                <p class="text-sm text-gray-600">${user.instrument}</p>
+                            </div>
+                        </div>
+                        <button onclick="sendWhatsApp('${user.phone}', '${user.name}')" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition" title="Enviar WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(memberCard);
+            });
+        }
+
+        function loadUserEvents() {
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const userEvents = events.filter(event => 
+                event.musicians.includes(currentUser.username)
+            );
+            
+            const container = document.getElementById('userEvents');
+            container.innerHTML = '';
+            
+            if (userEvents.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No tienes eventos asignados 📅</p>';
+                return;
+            }
+            
+            userEvents.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-l-4 border-blue-500 fade-in';
+                eventCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <h3 class="font-bold text-gray-800">${event.name}</h3>
+                                <select onchange="updateEventStatus('${event.id}', this.value)" class="text-xs px-2 py-1 rounded status-${event.status}">
+                                    <option value="agendado" ${event.status === 'agendado' ? 'selected' : ''}>📅 Agendado</option>
+                                    <option value="en-progreso" ${event.status === 'en-progreso' ? 'selected' : ''}>⏳ En Progreso</option>
+                                    <option value="realizado" ${event.status === 'realizado' ? 'selected' : ''}>✅ Realizado</option>
+                                    <option value="cancelado" ${event.status === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1 text-sm text-gray-600">
+                                <p><i class="fas fa-calendar mr-2"></i>${formatDate(event.date)}</p>
+                                <p><i class="fas fa-clock mr-2"></i>${event.time}</p>
+                                <p><i class="fas fa-map-marker-alt mr-2"></i>${event.location}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <button onclick="addToGoogleCalendar('${event.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition">
+                                📅 Google Calendar
+                            </button>
+                            <button onclick="openEventChat('${event.id}')" class="bg-purple-500 text-white px-3 py-1 rounded text-xs hover:bg-purple-600 transition">
+                                💬 Chat Evento
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(eventCard);
+            });
+        }
+
+        function updateEventStatus(eventId, newStatus) {
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const eventIndex = events.findIndex(e => e.id === eventId);
+            
+            if (eventIndex !== -1) {
+                events[eventIndex].status = newStatus;
+                localStorage.setItem('dolce_events', JSON.stringify(events));
+                loadUserEvents(); // Refresh the view
+            }
+        }
+
+        function loadActiveChats() {
+            const container = document.getElementById('activeChats');
+            container.innerHTML = `
+                <div class="p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition" onclick="openChat('admin', 'Chat con Administrador')">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                            👑
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Administrador</p>
+                            <p class="text-sm text-gray-600">Soporte técnico disponible</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition" onclick="openChat('general', 'Chat General')">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                            👥
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Chat General</p>
+                            <p class="text-sm text-gray-600">Conversación grupal</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadUsersTable() {
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.username}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.name}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.instrument}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${user.phone || 'N/A'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs rounded-full ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${user.status === 'active' ? '✅ Activo' : '❌ Inactivo'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm space-x-2">
+                        <button onclick="editUser('${user.username}')" class="text-blue-600 hover:text-blue-800">✏️ Editar</button>
+                        <button onclick="deleteUser('${user.username}')" class="text-red-600 hover:text-red-800">🗑️ Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function loadAdminEvents() {
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const container = document.getElementById('adminEventsList');
+            container.innerHTML = '';
+            
+            events.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition';
+                eventCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <h3 class="font-bold text-gray-800">${event.name}</h3>
+                                <span class="px-2 py-1 text-xs rounded status-${event.status}">
+                                    ${getStatusText(event.status)}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                                <p><i class="fas fa-calendar mr-2"></i>${formatDate(event.date)}</p>
+                                <p><i class="fas fa-clock mr-2"></i>${event.time}</p>
+                                <p><i class="fas fa-map-marker-alt mr-2"></i>${event.location}</p>
+                                <p><i class="fas fa-users mr-2"></i>${event.musicians.length} músicos</p>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">${event.description}</p>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <button onclick="editEvent('${event.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="deleteEvent('${event.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(eventCard);
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'agendado': '📅 Agendado',
+                'en-progreso': '⏳ En Progreso',
+                'realizado': '✅ Realizado',
+                'cancelado': '❌ Cancelado'
+            };
+            return statusMap[status] || status;
+        }
+
+        function openChat(chatId, title) {
+            currentChatId = chatId;
+            document.getElementById('chatTitle').textContent = title;
+            document.getElementById('chatModal').classList.remove('hidden');
+            loadChatMessages();
+        }
+
+        function openEventChat(eventId) {
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const event = events.find(e => e.id === eventId);
+            openChat(`event_${eventId}`, `Chat: ${event.name}`);
+        }
+
+        function closeChat() {
+            document.getElementById('chatModal').classList.add('hidden');
+            currentChatId = null;
+        }
+
+        function loadChatMessages() {
+            const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+            const messages = chats[currentChatId] || [];
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = '';
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">No hay mensajes aún. ¡Inicia la conversación! 💬</p>';
+                return;
+            }
+            
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                const isOwn = message.sender === currentUser.username;
+                messageDiv.className = `flex ${isOwn ? 'justify-end' : 'justify-start'}`;
+                messageDiv.innerHTML = `
+                    <div class="chat-bubble ${isOwn ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} px-4 py-2 rounded-lg">
+                        <p class="text-sm font-medium">${message.sender}</p>
+                        <p>${message.text}</p>
+                        <p class="text-xs opacity-75 mt-1">${formatTime(message.timestamp)}</p>
+                    </div>
+                `;
+                container.appendChild(messageDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+            if (!chats[currentChatId]) {
+                chats[currentChatId] = [];
+            }
+            
+            const message = {
+                sender: currentUser.username,
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+            
+            chats[currentChatId].push(message);
+            localStorage.setItem('dolce_chats', JSON.stringify(chats));
+            
+            input.value = '';
+            loadChatMessages();
+        }
+
+        function openEventModal(eventId = null) {
+            document.getElementById('eventModal').classList.remove('hidden');
+            if (eventId) {
+                // Edit mode
+                const events = JSON.parse(localStorage.getItem('dolce_events'));
+                const event = events.find(e => e.id === eventId);
+                document.getElementById('eventModalTitle').textContent = 'Editar Evento';
+                document.getElementById('eventName').value = event.name;
+                document.getElementById('eventDate').value = event.date;
+                document.getElementById('eventTime').value = event.time;
+                document.getElementById('eventLocation').value = event.location;
+                document.getElementById('eventDescription').value = event.description;
+            } else {
+                // Create mode
+                document.getElementById('eventModalTitle').textContent = 'Nuevo Evento';
+                document.getElementById('eventForm').reset();
+            }
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.add('hidden');
+        }
+
+        function handleEventSubmit(e) {
+            e.preventDefault();
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            
+            const eventData = {
+                id: 'evt' + Date.now(),
+                name: document.getElementById('eventName').value,
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                location: document.getElementById('eventLocation').value,
+                description: document.getElementById('eventDescription').value,
+                musicians: [currentUser.username],
+                status: 'agendado'
+            };
+            
+            events.push(eventData);
+            localStorage.setItem('dolce_events', JSON.stringify(events));
+            
+            closeEventModal();
+            loadUserEvents();
+            alert('✅ Evento creado exitosamente');
+        }
+
+        function addToGoogleCalendar(eventId) {
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const event = events.find(e => e.id === eventId);
+            
+            const startDate = new Date(`${event.date}T${event.time}`);
+            const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+            
+            const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+            
+            window.open(googleUrl, '_blank');
+        }
+
+        function toggleCalendarView() {
+            const calendarView = document.getElementById('calendarView');
+            if (calendarView.classList.contains('hidden')) {
+                calendarView.classList.remove('hidden');
+                renderCalendar();
+            } else {
+                calendarView.classList.add('hidden');
+            }
+        }
+
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthSpan = document.getElementById('currentMonth');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            monthSpan.textContent = `${getMonthName(month)} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            calendar.innerHTML = '';
+            
+            // Day headers
+            const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'p-2 text-center font-medium text-gray-600 bg-gray-100';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+            
+            // Empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day bg-gray-50';
+                calendar.appendChild(emptyDay);
+            }
+            
+            // Days of the month
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const userEvents = events.filter(event => 
+                event.musicians.includes(currentUser.username)
+            );
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day bg-white p-2 hover:bg-gray-50';
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'font-medium text-gray-800 mb-1';
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+                
+                // Check for events on this day
+                const dayEvents = userEvents.filter(event => {
+                    const eventDate = new Date(event.date);
+                    return eventDate.getDate() === day && 
+                           eventDate.getMonth() === month && 
+                           eventDate.getFullYear() === year;
+                });
+                
+                dayEvents.forEach(event => {
+                    const eventDot = document.createElement('div');
+                    eventDot.className = `text-xs p-1 bg-blue-100 text-blue-800 rounded mb-1 truncate status-${event.status}`;
+                    eventDot.textContent = event.name;
+                    dayCell.appendChild(eventDot);
+                });
+                
+                calendar.appendChild(dayCell);
+            }
+        }
+
+        function renderAdminCalendar() {
+            const calendar = document.getElementById('adminCalendar');
+            const monthSpan = document.getElementById('adminCurrentMonth');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            monthSpan.textContent = `${getMonthName(month)} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            calendar.innerHTML = '';
+            
+            // Day headers
+            const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'p-2 text-center font-medium text-gray-600 bg-gray-100';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+            
+            // Empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day bg-gray-50';
+                calendar.appendChild(emptyDay);
+            }
+            
+            // Days of the month
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day bg-white p-2 hover:bg-gray-50';
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'font-medium text-gray-800 mb-1';
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+                
+                // Check for events on this day
+                const dayEvents = events.filter(event => {
+                    const eventDate = new Date(event.date);
+                    return eventDate.getDate() === day && 
+                           eventDate.getMonth() === month && 
+                           eventDate.getFullYear() === year;
+                });
+                
+                dayEvents.forEach(event => {
+                    const eventDot = document.createElement('div');
+                    eventDot.className = `text-xs p-1 bg-purple-100 text-purple-800 rounded mb-1 truncate cursor-pointer hover:bg-purple-200 status-${event.status}`;
+                    eventDot.textContent = event.name;
+                    eventDot.onclick = () => editEvent(event.id);
+                    dayCell.appendChild(eventDot);
+                });
+                
+                calendar.appendChild(dayCell);
+            }
+        }
+
+        function navigateMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function navigateAdminMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderAdminCalendar();
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        function getMonthName(month) {
+            const months = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            return months[month];
+        }
+
+        // User Modal Functions
+        let editingUsername = null;
+
+        function openUserModal(username = null) {
+            editingUsername = username;
+            document.getElementById('userModal').classList.remove('hidden');
+            
+            if (username) {
+                // Edit mode
+                const users = JSON.parse(localStorage.getItem('dolce_users'));
+                const user = users.find(u => u.username === username);
+                document.getElementById('userModalTitle').textContent = 'Editar Usuario';
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editUsername').disabled = true;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editPhone').value = user.phone || '';
+                document.getElementById('editInstrument').value = user.instrument;
+                document.getElementById('editPassword').value = '';
+                document.getElementById('editStatus').value = user.status;
+            } else {
+                // Create mode
+                document.getElementById('userModalTitle').textContent = 'Agregar Usuario';
+                document.getElementById('userForm').reset();
+                document.getElementById('editUsername').disabled = false;
+            }
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.add('hidden');
+            editingUsername = null;
+        }
+
+        function handleUserSubmit(e) {
+            e.preventDefault();
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            
+            const userData = {
+                username: document.getElementById('editUsername').value,
+                name: document.getElementById('editName').value,
+                phone: document.getElementById('editPhone').value,
+                instrument: document.getElementById('editInstrument').value,
+                status: document.getElementById('editStatus').value,
+                role: 'musician'
+            };
+
+            // Handle password
+            const password = document.getElementById('editPassword').value;
+            if (editingUsername) {
+                // Editing existing user
+                const userIndex = users.findIndex(u => u.username === editingUsername);
+                if (userIndex !== -1) {
+                    userData.password = password || users[userIndex].password; // Keep old password if empty
+                    users[userIndex] = userData;
+                }
+            } else {
+                // Creating new user
+                if (!password) {
+                    alert('❌ La contraseña es requerida para nuevos usuarios');
+                    return;
+                }
+                // Check if username already exists
+                if (users.find(u => u.username === userData.username)) {
+                    alert('❌ El nombre de usuario ya existe');
+                    return;
+                }
+                userData.password = password;
+                users.push(userData);
+            }
+            
+            localStorage.setItem('dolce_users', JSON.stringify(users));
+            closeUserModal();
+            loadUsersTable();
+            alert('✅ Usuario guardado exitosamente');
+        }
+
+        // Admin Functions
+        function editUser(username) {
+            openUserModal(username);
+        }
+
+        function deleteUser(username) {
+            if (confirm(`¿Estás seguro de eliminar al usuario ${username}?`)) {
+                const users = JSON.parse(localStorage.getItem('dolce_users'));
+                const filteredUsers = users.filter(u => u.username !== username);
+                localStorage.setItem('dolce_users', JSON.stringify(filteredUsers));
+                loadUsersTable();
+                alert('✅ Usuario eliminado exitosamente');
+            }
+        }
+
+        function editEvent(eventId) {
+            alert(`Función de edición para evento: ${eventId} (Demo)`);
+        }
+
+        function deleteEvent(eventId) {
+            if (confirm('¿Estás seguro de eliminar este evento?')) {
+                const events = JSON.parse(localStorage.getItem('dolce_events'));
+                const filteredEvents = events.filter(e => e.id !== eventId);
+                localStorage.setItem('dolce_events', JSON.stringify(filteredEvents));
+                loadAdminEvents();
+                alert('✅ Evento eliminado exitosamente');
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d1f6bc017baec5',t:'MTc1NzUzOTE2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
