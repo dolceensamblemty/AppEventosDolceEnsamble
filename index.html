@@ -138,15 +138,19 @@
             background: #4f46e5;
         }
         
-        .status-agendado { background-color: #dbeafe; color: #1e40af; }
-        .status-en-progreso { background-color: #fef3c7; color: #d97706; }
-        .status-realizado { background-color: #d1fae5; color: #065f46; }
+        .status-confirmado { background-color: #d1fae5; color: #065f46; }
+        .status-pendiente { background-color: #fef3c7; color: #d97706; }
+        .status-pagado { background-color: #dcfce7; color: #166534; }
         .status-cancelado { background-color: #fee2e2; color: #dc2626; }
+        .status-postergado { background-color: #e0e7ff; color: #3730a3; }
+        .status-realizado { background-color: #f3e8ff; color: #7c3aed; }
         
-        .dark .status-agendado { background-color: #1e3a8a; color: #93c5fd; }
-        .dark .status-en-progreso { background-color: #92400e; color: #fcd34d; }
-        .dark .status-realizado { background-color: #064e3b; color: #6ee7b7; }
+        .dark .status-confirmado { background-color: #064e3b; color: #6ee7b7; }
+        .dark .status-pendiente { background-color: #92400e; color: #fcd34d; }
+        .dark .status-pagado { background-color: #14532d; color: #86efac; }
         .dark .status-cancelado { background-color: #991b1b; color: #fca5a5; }
+        .dark .status-postergado { background-color: #312e81; color: #c7d2fe; }
+        .dark .status-realizado { background-color: #581c87; color: #d8b4fe; }
     </style>
 </head>
 <body class="bg-gray-50 transition-colors duration-300">
@@ -236,7 +240,10 @@
 
                     <!-- My Events -->
                     <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">🎭 Mis Próximos Eventos</h2>
+                        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleEventsSection()">
+                            <h2 class="text-xl font-bold text-gray-800">🎭 Mis Próximos Eventos</h2>
+                            <i id="eventsToggleIcon" class="fas fa-chevron-up text-gray-500 transition-transform"></i>
+                        </div>
                         <div id="userEvents" class="space-y-4">
                             <!-- Events will be populated here -->
                         </div>
@@ -244,16 +251,21 @@
 
                     <!-- Calendar View -->
                     <div id="calendarView" class="bg-white rounded-xl shadow-lg p-6 hidden">
-                        <div class="flex justify-between items-center mb-4">
+                        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleCalendarContent()">
                             <h2 class="text-xl font-bold text-gray-800">📅 Mi Calendario</h2>
-                            <div class="flex space-x-2">
-                                <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">←</button>
-                                <span id="currentMonth" class="px-4 py-1 font-medium"></span>
-                                <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">→</button>
+                            <div class="flex items-center space-x-2">
+                                <div class="flex space-x-2">
+                                    <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" onclick="event.stopPropagation()">←</button>
+                                    <span id="currentMonth" class="px-4 py-1 font-medium"></span>
+                                    <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" onclick="event.stopPropagation()">→</button>
+                                </div>
+                                <i id="calendarToggleIcon" class="fas fa-chevron-up text-gray-500 transition-transform"></i>
                             </div>
                         </div>
-                        <div id="calendar" class="grid grid-cols-7 gap-1">
-                            <!-- Calendar will be populated here -->
+                        <div id="calendarContent">
+                            <div id="calendar" class="grid grid-cols-7 gap-1">
+                                <!-- Calendar will be populated here -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -640,6 +652,17 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
                     <textarea id="eventDescription" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" rows="3"></textarea>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado del Evento</label>
+                    <select id="eventStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                        <option value="confirmado">✅ Confirmado</option>
+                        <option value="pendiente">⏳ Pendiente</option>
+                        <option value="pagado">💰 Pagado</option>
+                        <option value="cancelado">❌ Cancelado</option>
+                        <option value="postergado">📅 Postergado</option>
+                        <option value="realizado">🎉 Realizado</option>
+                    </select>
+                </div>
                 <div class="flex space-x-3 pt-4">
                     <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
                         Guardar Evento
@@ -730,7 +753,7 @@
                 location: 'Jardín Botánico',
                 description: 'Ceremonia y recepción',
                 musicians: ['maria.violin', 'carlos.piano', 'ana.cello'],
-                status: 'agendado'
+                status: 'confirmado'
             },
             {
                 id: 'evt2',
@@ -740,7 +763,7 @@
                 location: 'Hotel Marriott',
                 description: 'Cena de gala empresarial',
                 musicians: ['sofia.arpa', 'diego.guitarra', 'elena.soprano'],
-                status: 'en-progreso'
+                status: 'pagado'
             },
             {
                 id: 'evt3',
@@ -924,7 +947,12 @@
                 if (!eventsSnapshot.empty) {
                     const events = [];
                     eventsSnapshot.forEach(doc => {
-                        events.push(doc.data());
+                        const eventData = doc.data();
+                        // Ensure event has all required fields
+                        if (!eventData.id) eventData.id = doc.id;
+                        if (!eventData.status) eventData.status = 'confirmado';
+                        if (!eventData.musicians) eventData.musicians = [];
+                        events.push(eventData);
                     });
                     localStorage.setItem('dolce_events', JSON.stringify(events));
                     hasFirebaseData = true;
@@ -936,7 +964,7 @@
                     const chats = {};
                     chatsSnapshot.forEach(doc => {
                         const data = doc.data();
-                        chats[data.chatId] = data.messages;
+                        chats[data.chatId] = data.messages || [];
                     });
                     localStorage.setItem('dolce_chats', JSON.stringify(chats));
                     hasFirebaseData = true;
@@ -963,6 +991,16 @@
                     setTimeout(() => {
                         syncIndicator.classList.add('hidden');
                     }, 3000);
+                    
+                    // Refresh current view if user is logged in
+                    if (currentUser) {
+                        if (currentUser.role === 'admin') {
+                            loadAdminEvents();
+                            loadUsersTable();
+                        } else {
+                            loadUserEvents();
+                        }
+                    }
                 } else {
                     console.log('ℹ️ No se encontraron datos en Firebase, usando datos locales');
                     syncIndicator.classList.add('hidden');
@@ -1557,10 +1595,12 @@
                             <div class="flex items-center space-x-2 mb-2">
                                 <h3 class="font-bold text-gray-800">${event.name}</h3>
                                 <select onchange="updateEventStatus('${event.id}', this.value)" class="text-xs px-2 py-1 rounded status-${event.status}">
-                                    <option value="agendado" ${event.status === 'agendado' ? 'selected' : ''}>📅 Agendado</option>
-                                    <option value="en-progreso" ${event.status === 'en-progreso' ? 'selected' : ''}>⏳ En Progreso</option>
-                                    <option value="realizado" ${event.status === 'realizado' ? 'selected' : ''}>✅ Realizado</option>
+                                    <option value="confirmado" ${event.status === 'confirmado' ? 'selected' : ''}>✅ Confirmado</option>
+                                    <option value="pendiente" ${event.status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
+                                    <option value="pagado" ${event.status === 'pagado' ? 'selected' : ''}>💰 Pagado</option>
                                     <option value="cancelado" ${event.status === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
+                                    <option value="postergado" ${event.status === 'postergado' ? 'selected' : ''}>📅 Postergado</option>
+                                    <option value="realizado" ${event.status === 'realizado' ? 'selected' : ''}>🎉 Realizado</option>
                                 </select>
                             </div>
                             <div class="space-y-1 text-sm text-gray-600">
@@ -1583,13 +1623,24 @@
             });
         }
 
-        function updateEventStatus(eventId, newStatus) {
+        async function updateEventStatus(eventId, newStatus) {
             const events = JSON.parse(localStorage.getItem('dolce_events'));
             const eventIndex = events.findIndex(e => e.id === eventId);
             
             if (eventIndex !== -1) {
                 events[eventIndex].status = newStatus;
                 localStorage.setItem('dolce_events', JSON.stringify(events));
+                
+                // Sync to Firebase
+                try {
+                    await db.collection('events').doc(eventId).update({
+                        status: newStatus
+                    });
+                    console.log('✅ Estado del evento sincronizado con Firebase');
+                } catch (error) {
+                    console.error('Error syncing event status to Firebase:', error);
+                }
+                
                 loadUserEvents(); // Refresh the view
             }
         }
@@ -1690,10 +1741,12 @@
 
         function getStatusText(status) {
             const statusMap = {
-                'agendado': '📅 Agendado',
-                'en-progreso': '⏳ En Progreso',
-                'realizado': '✅ Realizado',
-                'cancelado': '❌ Cancelado'
+                'confirmado': '✅ Confirmado',
+                'pendiente': '⏳ Pendiente',
+                'pagado': '💰 Pagado',
+                'cancelado': '❌ Cancelado',
+                'postergado': '📅 Postergado',
+                'realizado': '🎉 Realizado'
             };
             return statusMap[status] || status;
         }
@@ -1791,11 +1844,13 @@
                 document.getElementById('eventTime').value = event.time;
                 document.getElementById('eventLocation').value = event.location;
                 document.getElementById('eventDescription').value = event.description;
+                document.getElementById('eventStatus').value = event.status || 'confirmado';
                 document.getElementById('eventForm').dataset.editEventId = eventId;
             } else {
                 // Create mode
                 document.getElementById('eventModalTitle').textContent = 'Nuevo Evento';
                 document.getElementById('eventForm').reset();
+                document.getElementById('eventStatus').value = 'confirmado';
                 delete document.getElementById('eventForm').dataset.editEventId;
             }
         }
@@ -1804,7 +1859,7 @@
             document.getElementById('eventModal').classList.add('hidden');
         }
 
-        function handleEventSubmit(e) {
+        async function handleEventSubmit(e) {
             e.preventDefault();
             const events = JSON.parse(localStorage.getItem('dolce_events'));
             
@@ -1816,8 +1871,8 @@
                 time: document.getElementById('eventTime').value,
                 location: document.getElementById('eventLocation').value,
                 description: document.getElementById('eventDescription').value,
-                musicians: editEventId ? events.find(e => e.id === editEventId).musicians : [currentUser.username],
-                status: editEventId ? events.find(e => e.id === editEventId).status : 'agendado'
+                status: document.getElementById('eventStatus').value,
+                musicians: editEventId ? events.find(e => e.id === editEventId).musicians : [currentUser.username]
             };
             
             if (editEventId) {
@@ -1834,6 +1889,14 @@
             }
             
             localStorage.setItem('dolce_events', JSON.stringify(events));
+            
+            // Sync to Firebase
+            try {
+                await db.collection('events').doc(eventData.id).set(eventData);
+                console.log('✅ Evento sincronizado con Firebase');
+            } catch (error) {
+                console.error('Error syncing event to Firebase:', error);
+            }
             
             closeEventModal();
             
@@ -2029,6 +2092,37 @@
                 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
             ];
             return months[month];
+        }
+
+        // Toggle Functions for Collapsible Sections
+        function toggleEventsSection() {
+            const eventsSection = document.getElementById('userEvents');
+            const toggleIcon = document.getElementById('eventsToggleIcon');
+            
+            if (eventsSection.style.display === 'none') {
+                eventsSection.style.display = 'block';
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                eventsSection.style.display = 'none';
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function toggleCalendarContent() {
+            const calendarContent = document.getElementById('calendarContent');
+            const toggleIcon = document.getElementById('calendarToggleIcon');
+            
+            if (calendarContent.style.display === 'none') {
+                calendarContent.style.display = 'block';
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                calendarContent.style.display = 'none';
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
         }
 
         // Instruments Functions
@@ -2298,5 +2392,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d271bba065aec5',t:'MTc1NzU0NDIwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d29341625baec5',t:'MTc1NzU0NTU3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
