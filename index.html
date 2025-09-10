@@ -155,6 +155,14 @@
         <i class="fas fa-moon" id="themeIcon"></i>
     </button>
 
+    <!-- Sync Status Indicator -->
+    <div id="syncIndicator" class="fixed top-20 right-5 z-50 hidden">
+        <div class="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm flex items-center space-x-2">
+            <i class="fas fa-sync-alt fa-spin"></i>
+            <span>Sincronizando con Firebase...</span>
+        </div>
+    </div>
+
     <!-- Login Screen -->
     <div id="loginScreen" class="min-h-screen gradient-bg flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
@@ -757,6 +765,8 @@
             initializeApp();
             setupEventListeners();
             applyTheme();
+            // Auto-sync from Firebase on app load
+            autoSyncFromFirebase();
         });
 
         function initializeApp() {
@@ -879,6 +889,97 @@
                     loginScreen.classList.remove('gradient-bg-dark');
                     loginScreen.classList.add('gradient-bg');
                 }
+            }
+        }
+
+        // Auto-sync function that runs on app load
+        async function autoSyncFromFirebase() {
+            const syncIndicator = document.getElementById('syncIndicator');
+            
+            try {
+                // Show sync indicator
+                syncIndicator.classList.remove('hidden');
+                console.log('🔄 Iniciando sincronización automática desde Firebase...');
+                
+                // Check if Firebase data exists and is newer than local data
+                const usersSnapshot = await db.collection('users').get();
+                const eventsSnapshot = await db.collection('events').get();
+                const chatsSnapshot = await db.collection('chats').get();
+                const instrumentsDoc = await db.collection('settings').doc('instruments').get();
+                
+                let hasFirebaseData = false;
+                
+                // Download users if available
+                if (!usersSnapshot.empty) {
+                    const users = [];
+                    usersSnapshot.forEach(doc => {
+                        users.push(doc.data());
+                    });
+                    localStorage.setItem('dolce_users', JSON.stringify(users));
+                    hasFirebaseData = true;
+                    console.log('✅ Usuarios sincronizados desde Firebase');
+                }
+                
+                // Download events if available
+                if (!eventsSnapshot.empty) {
+                    const events = [];
+                    eventsSnapshot.forEach(doc => {
+                        events.push(doc.data());
+                    });
+                    localStorage.setItem('dolce_events', JSON.stringify(events));
+                    hasFirebaseData = true;
+                    console.log('✅ Eventos sincronizados desde Firebase');
+                }
+                
+                // Download chats if available
+                if (!chatsSnapshot.empty) {
+                    const chats = {};
+                    chatsSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        chats[data.chatId] = data.messages;
+                    });
+                    localStorage.setItem('dolce_chats', JSON.stringify(chats));
+                    hasFirebaseData = true;
+                    console.log('✅ Chats sincronizados desde Firebase');
+                }
+                
+                // Download instruments if available
+                if (instrumentsDoc.exists) {
+                    const instruments = instrumentsDoc.data().list;
+                    localStorage.setItem('dolce_instruments', JSON.stringify(instruments));
+                    hasFirebaseData = true;
+                    console.log('✅ Instrumentos sincronizados desde Firebase');
+                }
+                
+                if (hasFirebaseData) {
+                    console.log('🎉 Sincronización automática completada exitosamente');
+                    // Update indicator to show success
+                    syncIndicator.innerHTML = `
+                        <div class="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm flex items-center space-x-2">
+                            <i class="fas fa-check"></i>
+                            <span>Datos actualizados desde Firebase</span>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        syncIndicator.classList.add('hidden');
+                    }, 3000);
+                } else {
+                    console.log('ℹ️ No se encontraron datos en Firebase, usando datos locales');
+                    syncIndicator.classList.add('hidden');
+                }
+                
+            } catch (error) {
+                console.warn('⚠️ Error en sincronización automática (usando datos locales):', error.message);
+                // Show error indicator
+                syncIndicator.innerHTML = `
+                    <div class="bg-yellow-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm flex items-center space-x-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Usando datos locales</span>
+                    </div>
+                `;
+                setTimeout(() => {
+                    syncIndicator.classList.add('hidden');
+                }, 3000);
             }
         }
 
@@ -1166,6 +1267,7 @@
             document.getElementById('dashboardScreen').classList.remove('hidden');
             document.getElementById('userWelcome').textContent = `¡Hola, ${currentUser.name}! 👋`;
             
+            // Load dashboard data (will use the most recent data from Firebase or local)
             loadUserEvents();
             loadTeamMembers();
             loadActiveChats();
@@ -1175,6 +1277,7 @@
         function showAdminScreen() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminScreen').classList.remove('hidden');
+            // Load admin data (will use the most recent data from Firebase or local)
             showAdminPanel('users');
         }
 
@@ -2195,5 +2298,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d2628bf34aaec5',t:'MTc1NzU0MzU4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d271bba065aec5',t:'MTc1NzU0NDIwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
