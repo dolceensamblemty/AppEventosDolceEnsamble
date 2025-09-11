@@ -119,8 +119,8 @@
         
         .theme-toggle {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 20px;
+            left: 20px;
             z-index: 1000;
             background: #6366f1;
             color: white;
@@ -151,6 +151,15 @@
         .dark .status-cancelado { background-color: #991b1b; color: #fca5a5; }
         .dark .status-postergado { background-color: #312e81; color: #c7d2fe; }
         .dark .status-realizado { background-color: #581c87; color: #d8b4fe; }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 transition-colors duration-300">
@@ -206,6 +215,25 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <span id="userWelcome" class="text-gray-600"></span>
+                        <!-- Notifications Button -->
+                        <div class="relative">
+                            <button id="notificationsBtn" class="relative bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition">
+                                <i class="fas fa-bell"></i>
+                                <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                            </button>
+                            <!-- Notifications Dropdown -->
+                            <div id="notificationsDropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 hidden">
+                                <div class="p-4 border-b">
+                                    <h3 class="font-bold text-gray-800">🔔 Notificaciones</h3>
+                                </div>
+                                <div id="notificationsList" class="max-h-64 overflow-y-auto">
+                                    <!-- Notifications will be populated here -->
+                                </div>
+                                <div class="p-3 border-t text-center">
+                                    <button id="markAllReadBtn" class="text-sm text-blue-600 hover:text-blue-800">Marcar todas como leídas</button>
+                                </div>
+                            </div>
+                        </div>
                         <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
                             Cerrar Sesión
                         </button>
@@ -223,10 +251,6 @@
                     <div class="bg-white rounded-xl shadow-lg p-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-4">🚀 Acciones Rápidas</h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button id="newEventBtn" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition pulse-animation">
-                                <i class="fas fa-plus mb-2"></i>
-                                <div>Nuevo Evento</div>
-                            </button>
                             <button id="chatAdminBtn" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600 transition">
                                 <i class="fas fa-headset mb-2"></i>
                                 <div>Chat con Admin</div>
@@ -234,6 +258,10 @@
                             <button id="viewCalendarBtn" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600 transition">
                                 <i class="fas fa-calendar mb-2"></i>
                                 <div>Ver Calendario</div>
+                            </button>
+                            <button id="addUserEventBtn" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fas fa-plus mb-2"></i>
+                                <div>Proponer Evento</div>
                             </button>
                         </div>
                     </div>
@@ -244,6 +272,58 @@
                             <h2 class="text-xl font-bold text-gray-800">🎭 Mis Próximos Eventos</h2>
                             <i id="eventsToggleIcon" class="fas fa-chevron-up text-gray-500 transition-transform"></i>
                         </div>
+                        
+                        <!-- Event Filters -->
+                        <div id="eventFilters" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Filtrar por Estado</label>
+                                    <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" onchange="applyEventFilters()">
+                                        <option value="">Todos los estados</option>
+                                        <option value="confirmado">✅ Confirmado</option>
+                                        <option value="pendiente">⏳ Pendiente</option>
+                                        <option value="pagado">💰 Pagado</option>
+                                        <option value="cancelado">❌ Cancelado</option>
+                                        <option value="postergado">📅 Postergado</option>
+                                        <option value="realizado">🎉 Realizado</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Filtrar por Mes</label>
+                                    <select id="monthFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" onchange="applyEventFilters()">
+                                        <option value="">Todos los meses</option>
+                                        <option value="0">Enero</option>
+                                        <option value="1">Febrero</option>
+                                        <option value="2">Marzo</option>
+                                        <option value="3">Abril</option>
+                                        <option value="4">Mayo</option>
+                                        <option value="5">Junio</option>
+                                        <option value="6">Julio</option>
+                                        <option value="7">Agosto</option>
+                                        <option value="8">Septiembre</option>
+                                        <option value="9">Octubre</option>
+                                        <option value="10">Noviembre</option>
+                                        <option value="11">Diciembre</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Filtrar por Año</label>
+                                    <select id="yearFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" onchange="applyEventFilters()">
+                                        <option value="">Todos los años</option>
+                                        <option value="2024">2024</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex justify-between items-center">
+                                <button onclick="clearEventFilters()" class="text-sm text-gray-600 hover:text-gray-800">
+                                    🔄 Limpiar filtros
+                                </button>
+                                <span id="eventCount" class="text-sm text-gray-600"></span>
+                            </div>
+                        </div>
+                        
                         <div id="userEvents" class="space-y-4">
                             <!-- Events will be populated here -->
                         </div>
@@ -274,7 +354,10 @@
                 <div class="space-y-6">
                     <!-- Team Members -->
                     <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">👥 Miembros del Equipo</h2>
+                        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleTeamMembersSection()">
+                            <h2 class="text-xl font-bold text-gray-800">👥 Miembros del Equipo</h2>
+                            <i id="teamMembersToggleIcon" class="fas fa-chevron-up text-gray-500 transition-transform"></i>
+                        </div>
                         <div id="teamMembers" class="space-y-3">
                             <!-- Team members will be populated here -->
                         </div>
@@ -282,7 +365,10 @@
 
                     <!-- Active Chats -->
                     <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">💬 Chats Activos</h2>
+                        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleActiveChatsSection()">
+                            <h2 class="text-xl font-bold text-gray-800">💬 Chats Activos</h2>
+                            <i id="activeChatsToggleIcon" class="fas fa-chevron-up text-gray-500 transition-transform"></i>
+                        </div>
                         <div id="activeChats" class="space-y-3">
                             <!-- Chats will be populated here -->
                         </div>
@@ -290,7 +376,10 @@
 
                     <!-- Notifications -->
                     <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">🔔 Notificaciones</h2>
+                        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleNotificationsSection()">
+                            <h2 class="text-xl font-bold text-gray-800">🔔 Notificaciones</h2>
+                            <i id="notificationsSectionToggleIcon" class="fas fa-chevron-up text-gray-500 transition-transform"></i>
+                        </div>
                         <div id="notifications" class="space-y-3">
                             <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                                 <p class="text-sm text-blue-800">Nuevo evento asignado: Boda García</p>
@@ -318,27 +407,27 @@
                         <h1 class="text-xl font-bold text-white">Panel de Administrador</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <div class="flex space-x-2">
-                            <button id="adminUsersBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                        <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
+                            <button id="adminUsersBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition whitespace-nowrap">
                                 👥 Usuarios
                             </button>
-                            <button id="adminEventsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                            <button id="adminEventsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition whitespace-nowrap">
                                 📅 Eventos
                             </button>
-                            <button id="adminCalendarBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                            <button id="adminCalendarBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition whitespace-nowrap">
                                 🗓️ Calendario
                             </button>
-                            <button id="adminChatsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                            <button id="adminChatsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition whitespace-nowrap">
                                 💬 Chats
                             </button>
-                            <button id="adminDataBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                            <button id="adminDataBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition whitespace-nowrap">
                                 📊 Datos
                             </button>
-                            <button id="adminInstrumentsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                            <button id="adminInstrumentsBtn" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition whitespace-nowrap">
                                 🎼 Instrumentos
                             </button>
                         </div>
-                        <button id="adminLogoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                        <button id="adminLogoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition whitespace-nowrap">
                             Cerrar Sesión
                         </button>
                     </div>
@@ -623,15 +712,15 @@
     </div>
 
     <!-- Event Modal -->
-    <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div class="flex justify-between items-center p-6 border-b">
+    <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md my-8 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white rounded-t-xl">
                 <h3 id="eventModalTitle" class="text-lg font-bold text-gray-800">Nuevo Evento</h3>
                 <button id="closeEventBtn" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="eventForm" class="p-6 space-y-4">
+            <form id="eventForm" class="p-4 space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Evento</label>
                     <input type="text" id="eventName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
@@ -653,6 +742,16 @@
                     <textarea id="eventDescription" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" rows="3"></textarea>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notas Administrativas</label>
+                    <textarea id="eventNotes" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" rows="2" placeholder="Notas internas del administrador..."></textarea>
+                </div>
+                <div id="eventMusiciansSection" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Músicos Asignados</label>
+                    <div id="eventMusiciansCheckboxes" class="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-gray-50">
+                        <!-- Musicians checkboxes will be populated here -->
+                    </div>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Estado del Evento</label>
                     <select id="eventStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
                         <option value="confirmado">✅ Confirmado</option>
@@ -663,11 +762,11 @@
                         <option value="realizado">🎉 Realizado</option>
                     </select>
                 </div>
-                <div class="flex space-x-3 pt-4">
-                    <button type="submit" class="flex-1 bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition">
+                <div class="flex space-x-3 pt-4 pb-2 sticky bottom-0 bg-white">
+                    <button type="submit" class="flex-1 bg-purple-500 text-white py-3 rounded-lg hover:bg-purple-600 transition font-medium">
                         Guardar Evento
                     </button>
-                    <button type="button" id="cancelEventBtn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                    <button type="button" id="cancelEventBtn" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition font-medium">
                         Cancelar
                     </button>
                 </div>
@@ -702,6 +801,59 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div id="eventDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white rounded-t-xl">
+                <h3 id="eventDetailsTitle" class="text-xl font-bold text-gray-800">Detalles del Evento</h3>
+                <button id="closeEventDetailsBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Event Information -->
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-gray-800 mb-3">📋 Información del Evento</h4>
+                            <div id="eventDetailsInfo" class="space-y-2 text-sm">
+                                <!-- Event details will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-gray-800 mb-3">👥 Músicos Asignados</h4>
+                            <div id="eventDetailsMusicians" class="space-y-2">
+                                <!-- Musicians will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg" id="eventDetailsNotesSection">
+                            <h4 class="font-bold text-gray-800 mb-3">📝 Notas Administrativas</h4>
+                            <div id="eventDetailsNotes" class="text-sm text-gray-600">
+                                <!-- Notes will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Event Chat -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-3">💬 Chat del Evento</h4>
+                        <div id="eventDetailsChat" class="h-64 overflow-y-auto bg-white rounded-lg p-3 mb-3 space-y-2">
+                            <!-- Chat messages will be populated here -->
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" id="eventDetailsChatInput" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500" placeholder="Escribe tu mensaje...">
+                            <button id="sendEventDetailsChatBtn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -752,8 +904,10 @@
                 time: '18:00',
                 location: 'Jardín Botánico',
                 description: 'Ceremonia y recepción',
+                notes: 'Confirmar repertorio clásico. Cliente prefiere música suave durante la ceremonia.',
                 musicians: ['maria.violin', 'carlos.piano', 'ana.cello'],
-                status: 'confirmado'
+                status: 'confirmado',
+                createdBy: 'admin'
             },
             {
                 id: 'evt2',
@@ -762,8 +916,10 @@
                 time: '19:30',
                 location: 'Hotel Marriott',
                 description: 'Cena de gala empresarial',
+                notes: 'Evento formal. Música de fondo durante la cena. Evitar música muy alta.',
                 musicians: ['sofia.arpa', 'diego.guitarra', 'elena.soprano'],
-                status: 'pagado'
+                status: 'pagado',
+                createdBy: 'admin'
             },
             {
                 id: 'evt3',
@@ -772,8 +928,10 @@
                 time: '20:00',
                 location: 'Salón Crystal',
                 description: 'Celebración de 15 años',
+                notes: 'Incluir vals tradicional. La quinceañera quiere sorprender con una canción especial.',
                 musicians: ['luis.flauta', 'miguel.bajo', 'laura.oboe'],
-                status: 'realizado'
+                status: 'realizado',
+                createdBy: 'admin'
             }
         ];
 
@@ -806,6 +964,9 @@
             if (!localStorage.getItem('dolce_instruments')) {
                 localStorage.setItem('dolce_instruments', JSON.stringify(defaultInstruments));
             }
+            if (!localStorage.getItem('dolce_notifications')) {
+                localStorage.setItem('dolce_notifications', JSON.stringify({}));
+            }
         }
 
         function setupEventListeners() {
@@ -820,9 +981,13 @@
             document.getElementById('adminLogoutBtn').addEventListener('click', handleLogout);
             
             // Dashboard actions
-            document.getElementById('newEventBtn').addEventListener('click', () => openEventModal());
             document.getElementById('chatAdminBtn').addEventListener('click', () => openChat('admin', 'Chat con Administrador'));
             document.getElementById('viewCalendarBtn').addEventListener('click', toggleCalendarView);
+            document.getElementById('addUserEventBtn').addEventListener('click', () => openEventModal());
+            
+            // Notifications
+            document.getElementById('notificationsBtn').addEventListener('click', toggleNotifications);
+            document.getElementById('markAllReadBtn').addEventListener('click', markAllNotificationsRead);
             
             // Admin panel
             document.getElementById('adminUsersBtn').addEventListener('click', () => showAdminPanel('users'));
@@ -873,6 +1038,13 @@
             
             // Instrument form
             document.getElementById('instrumentForm').addEventListener('submit', handleInstrumentSubmit);
+            
+            // Event details modal
+            document.getElementById('closeEventDetailsBtn').addEventListener('click', closeEventDetailsModal);
+            document.getElementById('sendEventDetailsChatBtn').addEventListener('click', sendEventDetailsMessage);
+            document.getElementById('eventDetailsChatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendEventDetailsMessage();
+            });
             
             // Calendar navigation
             document.getElementById('prevMonth').addEventListener('click', () => navigateMonth(-1));
@@ -1310,6 +1482,7 @@
             loadTeamMembers();
             loadActiveChats();
             renderCalendar();
+            loadNotifications();
         }
 
         function showAdminScreen() {
@@ -1574,15 +1747,24 @@
 
         function loadUserEvents() {
             const events = JSON.parse(localStorage.getItem('dolce_events'));
-            const userEvents = events.filter(event => 
+            let userEvents = events.filter(event => 
                 event.musicians.includes(currentUser.username)
             );
+            
+            // Apply filters
+            userEvents = applyEventFiltersToList(userEvents);
             
             const container = document.getElementById('userEvents');
             container.innerHTML = '';
             
+            // Update event count
+            const totalUserEvents = events.filter(event => 
+                event.musicians.includes(currentUser.username)
+            ).length;
+            document.getElementById('eventCount').textContent = `Mostrando ${userEvents.length} de ${totalUserEvents} eventos`;
+            
             if (userEvents.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-8">No tienes eventos asignados 📅</p>';
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No se encontraron eventos con los filtros aplicados 📅</p>';
                 return;
             }
             
@@ -1594,14 +1776,10 @@
                         <div class="flex-1">
                             <div class="flex items-center space-x-2 mb-2">
                                 <h3 class="font-bold text-gray-800">${event.name}</h3>
-                                <select onchange="updateEventStatus('${event.id}', this.value)" class="text-xs px-2 py-1 rounded status-${event.status}">
-                                    <option value="confirmado" ${event.status === 'confirmado' ? 'selected' : ''}>✅ Confirmado</option>
-                                    <option value="pendiente" ${event.status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
-                                    <option value="pagado" ${event.status === 'pagado' ? 'selected' : ''}>💰 Pagado</option>
-                                    <option value="cancelado" ${event.status === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
-                                    <option value="postergado" ${event.status === 'postergado' ? 'selected' : ''}>📅 Postergado</option>
-                                    <option value="realizado" ${event.status === 'realizado' ? 'selected' : ''}>🎉 Realizado</option>
-                                </select>
+                                <span class="px-2 py-1 text-xs rounded status-${event.status}">
+                                    ${getStatusText(event.status)}
+                                </span>
+                                ${event.createdBy && event.createdBy !== 'admin' ? '<span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">👤 Usuario</span>' : '<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">👑 Oficial</span>'}
                             </div>
                             <div class="space-y-1 text-sm text-gray-600">
                                 <p><i class="fas fa-calendar mr-2"></i>${formatDate(event.date)}</p>
@@ -1610,6 +1788,9 @@
                             </div>
                         </div>
                         <div class="flex flex-col space-y-2">
+                            <button onclick="openEventDetails('${event.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition">
+                                📋 Detalles
+                            </button>
                             <button onclick="addToGoogleCalendar('${event.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition">
                                 📅 Google Calendar
                             </button>
@@ -1834,6 +2015,15 @@
 
         function openEventModal(eventId = null) {
             document.getElementById('eventModal').classList.remove('hidden');
+            
+            // Show musicians section only for admin
+            if (currentUser && currentUser.role === 'admin') {
+                document.getElementById('eventMusiciansSection').classList.remove('hidden');
+                loadEventMusiciansCheckboxes();
+            } else {
+                document.getElementById('eventMusiciansSection').classList.add('hidden');
+            }
+            
             if (eventId) {
                 // Edit mode
                 const events = JSON.parse(localStorage.getItem('dolce_events'));
@@ -1844,8 +2034,20 @@
                 document.getElementById('eventTime').value = event.time;
                 document.getElementById('eventLocation').value = event.location;
                 document.getElementById('eventDescription').value = event.description;
+                document.getElementById('eventNotes').value = event.notes || '';
                 document.getElementById('eventStatus').value = event.status || 'confirmado';
                 document.getElementById('eventForm').dataset.editEventId = eventId;
+                
+                // Set selected musicians for admin
+                if (currentUser && currentUser.role === 'admin') {
+                    setTimeout(() => {
+                        const eventMusicians = event.musicians || [];
+                        eventMusicians.forEach(musician => {
+                            const checkbox = document.getElementById(`musician_${musician}`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }, 100);
+                }
             } else {
                 // Create mode
                 document.getElementById('eventModalTitle').textContent = 'Nuevo Evento';
@@ -1865,27 +2067,71 @@
             
             const editEventId = document.getElementById('eventForm').dataset.editEventId;
             
+            // Get selected musicians (only for admin)
+            let selectedMusicians = [];
+            if (currentUser && currentUser.role === 'admin') {
+                const checkboxes = document.querySelectorAll('#eventMusiciansCheckboxes input[type="checkbox"]:checked');
+                checkboxes.forEach(checkbox => {
+                    selectedMusicians.push(checkbox.value);
+                });
+            } else {
+                selectedMusicians = editEventId ? events.find(e => e.id === editEventId).musicians : [currentUser.username];
+            }
+            
             const eventData = {
                 name: document.getElementById('eventName').value,
                 date: document.getElementById('eventDate').value,
                 time: document.getElementById('eventTime').value,
                 location: document.getElementById('eventLocation').value,
                 description: document.getElementById('eventDescription').value,
+                notes: document.getElementById('eventNotes').value || '',
                 status: document.getElementById('eventStatus').value,
-                musicians: editEventId ? events.find(e => e.id === editEventId).musicians : [currentUser.username]
+                musicians: selectedMusicians,
+                createdBy: currentUser.role === 'admin' ? 'admin' : currentUser.username
             };
+            
+            let isNewEvent = false;
+            let affectedMusicians = [];
             
             if (editEventId) {
                 // Edit existing event
                 const eventIndex = events.findIndex(e => e.id === editEventId);
                 if (eventIndex !== -1) {
+                    const oldEvent = events[eventIndex];
                     eventData.id = editEventId;
                     events[eventIndex] = eventData;
+                    
+                    // Check if musicians were changed
+                    const oldMusicians = oldEvent.musicians || [];
+                    const newMusicians = eventData.musicians || [];
+                    affectedMusicians = [...new Set([...oldMusicians, ...newMusicians])];
+                    
+                    // Create notification for event modification
+                    if (currentUser.role === 'admin') {
+                        createNotification(affectedMusicians, 'event_modified', {
+                            eventName: eventData.name,
+                            eventId: eventData.id,
+                            date: eventData.date,
+                            time: eventData.time
+                        });
+                    }
                 }
             } else {
                 // Create new event
                 eventData.id = 'evt' + Date.now();
                 events.push(eventData);
+                isNewEvent = true;
+                affectedMusicians = eventData.musicians || [];
+                
+                // Create notification for new event
+                if (currentUser.role === 'admin') {
+                    createNotification(affectedMusicians, 'new_event', {
+                        eventName: eventData.name,
+                        eventId: eventData.id,
+                        date: eventData.date,
+                        time: eventData.time
+                    });
+                }
             }
             
             localStorage.setItem('dolce_events', JSON.stringify(events));
@@ -2120,6 +2366,51 @@
                 toggleIcon.classList.add('fa-chevron-up');
             } else {
                 calendarContent.style.display = 'none';
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function toggleTeamMembersSection() {
+            const teamMembersSection = document.getElementById('teamMembers');
+            const toggleIcon = document.getElementById('teamMembersToggleIcon');
+            
+            if (teamMembersSection.style.display === 'none') {
+                teamMembersSection.style.display = 'block';
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                teamMembersSection.style.display = 'none';
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function toggleActiveChatsSection() {
+            const activeChatsSection = document.getElementById('activeChats');
+            const toggleIcon = document.getElementById('activeChatsToggleIcon');
+            
+            if (activeChatsSection.style.display === 'none') {
+                activeChatsSection.style.display = 'block';
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                activeChatsSection.style.display = 'none';
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function toggleNotificationsSection() {
+            const notificationsSection = document.getElementById('notifications');
+            const toggleIcon = document.getElementById('notificationsSectionToggleIcon');
+            
+            if (notificationsSection.style.display === 'none') {
+                notificationsSection.style.display = 'block';
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                notificationsSection.style.display = 'none';
                 toggleIcon.classList.remove('fa-chevron-up');
                 toggleIcon.classList.add('fa-chevron-down');
             }
@@ -2391,6 +2682,356 @@
                 alert('✅ Evento eliminado exitosamente');
             }
         }
+
+        // Musicians selection for events
+        function loadEventMusiciansCheckboxes() {
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const musicians = users.filter(user => user.role === 'musician');
+            const container = document.getElementById('eventMusiciansCheckboxes');
+            container.innerHTML = '';
+            
+            musicians.forEach(musician => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'flex items-center space-x-2';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="musician_${musician.username}" value="${musician.username}" class="rounded">
+                    <label for="musician_${musician.username}" class="text-sm text-gray-700">${musician.name} (${musician.instruments ? musician.instruments.join(', ') : 'Sin instrumentos'})</label>
+                `;
+                container.appendChild(checkboxDiv);
+            });
+        }
+
+        // Notifications System
+        function createNotification(usernames, type, data) {
+            const notifications = JSON.parse(localStorage.getItem('dolce_notifications'));
+            const timestamp = new Date().toISOString();
+            
+            usernames.forEach(username => {
+                if (!notifications[username]) {
+                    notifications[username] = [];
+                }
+                
+                let message = '';
+                let icon = '📢';
+                
+                switch(type) {
+                    case 'new_event':
+                        message = `Nuevo evento asignado: "${data.eventName}" el ${formatDate(data.date)} a las ${data.time}`;
+                        icon = '🎭';
+                        break;
+                    case 'event_modified':
+                        message = `Evento modificado: "${data.eventName}" el ${formatDate(data.date)} a las ${data.time}`;
+                        icon = '✏️';
+                        break;
+                    case 'event_cancelled':
+                        message = `Evento cancelado: "${data.eventName}"`;
+                        icon = '❌';
+                        break;
+                    case 'status_changed':
+                        message = `Estado del evento "${data.eventName}" cambió a: ${getStatusText(data.status)}`;
+                        icon = '🔄';
+                        break;
+                }
+                
+                notifications[username].push({
+                    id: Date.now() + Math.random(),
+                    type: type,
+                    message: message,
+                    icon: icon,
+                    timestamp: timestamp,
+                    read: false,
+                    data: data
+                });
+            });
+            
+            localStorage.setItem('dolce_notifications', JSON.stringify(notifications));
+        }
+
+        function loadNotifications() {
+            if (!currentUser) return;
+            
+            const notifications = JSON.parse(localStorage.getItem('dolce_notifications'));
+            const userNotifications = notifications[currentUser.username] || [];
+            const unreadCount = userNotifications.filter(n => !n.read).length;
+            
+            // Update badge
+            const badge = document.getElementById('notificationBadge');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+            
+            // Load notifications list
+            const container = document.getElementById('notificationsList');
+            container.innerHTML = '';
+            
+            if (userNotifications.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-gray-500">No tienes notificaciones</div>';
+                return;
+            }
+            
+            // Sort by timestamp (newest first)
+            const sortedNotifications = userNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            sortedNotifications.forEach(notification => {
+                const notificationDiv = document.createElement('div');
+                notificationDiv.className = `p-3 border-b hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`;
+                notificationDiv.onclick = () => markNotificationAsRead(notification.id);
+                
+                notificationDiv.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <span class="text-lg">${notification.icon}</span>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-800 ${!notification.read ? 'font-medium' : ''}">${notification.message}</p>
+                            <p class="text-xs text-gray-500 mt-1">${formatTime(notification.timestamp)}</p>
+                        </div>
+                        ${!notification.read ? '<div class="w-2 h-2 bg-blue-500 rounded-full"></div>' : ''}
+                    </div>
+                `;
+                container.appendChild(notificationDiv);
+            });
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('hidden');
+            
+            if (!dropdown.classList.contains('hidden')) {
+                loadNotifications();
+            }
+        }
+
+        function markNotificationAsRead(notificationId) {
+            const notifications = JSON.parse(localStorage.getItem('dolce_notifications'));
+            const userNotifications = notifications[currentUser.username] || [];
+            
+            const notification = userNotifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+                localStorage.setItem('dolce_notifications', JSON.stringify(notifications));
+                loadNotifications();
+            }
+        }
+
+        function markAllNotificationsRead() {
+            const notifications = JSON.parse(localStorage.getItem('dolce_notifications'));
+            const userNotifications = notifications[currentUser.username] || [];
+            
+            userNotifications.forEach(notification => {
+                notification.read = true;
+            });
+            
+            localStorage.setItem('dolce_notifications', JSON.stringify(notifications));
+            loadNotifications();
+        }
+
+        // Event Filter Functions
+        function applyEventFilters() {
+            loadUserEvents();
+        }
+
+        function applyEventFiltersToList(events) {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const monthFilter = document.getElementById('monthFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+
+            return events.filter(event => {
+                const eventDate = new Date(event.date);
+                
+                // Status filter
+                if (statusFilter && event.status !== statusFilter) {
+                    return false;
+                }
+                
+                // Month filter
+                if (monthFilter !== '' && eventDate.getMonth() !== parseInt(monthFilter)) {
+                    return false;
+                }
+                
+                // Year filter
+                if (yearFilter && eventDate.getFullYear() !== parseInt(yearFilter)) {
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+
+        function clearEventFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('yearFilter').value = '';
+            loadUserEvents();
+        }
+
+        // Event Details Functions
+        let currentEventDetailsId = null;
+
+        function openEventDetails(eventId) {
+            currentEventDetailsId = eventId;
+            const events = JSON.parse(localStorage.getItem('dolce_events'));
+            const event = events.find(e => e.id === eventId);
+            
+            if (!event) {
+                alert('❌ Evento no encontrado');
+                return;
+            }
+
+            document.getElementById('eventDetailsTitle').textContent = `Detalles: ${event.name}`;
+            
+            // Load event information
+            const eventInfo = document.getElementById('eventDetailsInfo');
+            eventInfo.innerHTML = `
+                <div class="grid grid-cols-2 gap-2">
+                    <div><strong>📅 Fecha:</strong></div>
+                    <div>${formatDate(event.date)}</div>
+                    <div><strong>🕐 Hora:</strong></div>
+                    <div>${event.time}</div>
+                    <div><strong>📍 Ubicación:</strong></div>
+                    <div>${event.location}</div>
+                    <div><strong>📊 Estado:</strong></div>
+                    <div><span class="px-2 py-1 text-xs rounded status-${event.status}">${getStatusText(event.status)}</span></div>
+                    <div><strong>👤 Creado por:</strong></div>
+                    <div>${event.createdBy === 'admin' ? '👑 Administrador' : '👤 ' + event.createdBy}</div>
+                </div>
+                <div class="mt-3">
+                    <strong>📝 Descripción:</strong>
+                    <p class="mt-1 text-gray-600">${event.description || 'Sin descripción'}</p>
+                </div>
+            `;
+            
+            // Load musicians
+            const users = JSON.parse(localStorage.getItem('dolce_users'));
+            const musiciansContainer = document.getElementById('eventDetailsMusicians');
+            musiciansContainer.innerHTML = '';
+            
+            if (event.musicians && event.musicians.length > 0) {
+                event.musicians.forEach(musicianUsername => {
+                    const musician = users.find(u => u.username === musicianUsername);
+                    if (musician) {
+                        const musicianDiv = document.createElement('div');
+                        musicianDiv.className = 'flex items-center space-x-2 p-2 bg-white rounded border';
+                        musicianDiv.innerHTML = `
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                ${musician.name.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-medium text-sm">${musician.name}</p>
+                                <p class="text-xs text-gray-600">${musician.instruments ? musician.instruments.join(', ') : 'Sin instrumentos'}</p>
+                            </div>
+                        `;
+                        musiciansContainer.appendChild(musicianDiv);
+                    }
+                });
+            } else {
+                musiciansContainer.innerHTML = '<p class="text-gray-500 text-sm">No hay músicos asignados</p>';
+            }
+            
+            // Load notes
+            const notesContainer = document.getElementById('eventDetailsNotes');
+            const notesSection = document.getElementById('eventDetailsNotesSection');
+            if (event.notes && event.notes.trim()) {
+                notesContainer.textContent = event.notes;
+                notesSection.classList.remove('hidden');
+            } else {
+                notesSection.classList.add('hidden');
+            }
+            
+            // Load event chat
+            loadEventDetailsChat();
+            
+            document.getElementById('eventDetailsModal').classList.remove('hidden');
+        }
+
+        function closeEventDetailsModal() {
+            document.getElementById('eventDetailsModal').classList.add('hidden');
+            currentEventDetailsId = null;
+        }
+
+        function loadEventDetailsChat() {
+            if (!currentEventDetailsId) return;
+            
+            const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+            const chatId = `event_${currentEventDetailsId}`;
+            const messages = chats[chatId] || [];
+            const container = document.getElementById('eventDetailsChat');
+            
+            container.innerHTML = '';
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center text-sm">No hay mensajes en este evento. ¡Inicia la conversación! 💬</p>';
+                return;
+            }
+            
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                const isOwn = message.sender === currentUser.username;
+                messageDiv.className = `flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2`;
+                messageDiv.innerHTML = `
+                    <div class="max-w-xs ${isOwn ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} px-3 py-2 rounded-lg">
+                        <p class="text-xs font-medium opacity-75">${message.sender}</p>
+                        <p class="text-sm">${message.text}</p>
+                        <p class="text-xs opacity-75 mt-1">${formatTime(message.timestamp)}</p>
+                    </div>
+                `;
+                container.appendChild(messageDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendEventDetailsMessage() {
+            if (!currentEventDetailsId) return;
+            
+            const input = document.getElementById('eventDetailsChatInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const chats = JSON.parse(localStorage.getItem('dolce_chats'));
+            const chatId = `event_${currentEventDetailsId}`;
+            
+            if (!chats[chatId]) {
+                chats[chatId] = [];
+            }
+            
+            const message = {
+                sender: currentUser.username,
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+            
+            chats[chatId].push(message);
+            localStorage.setItem('dolce_chats', JSON.stringify(chats));
+            
+            // Sync to Firebase
+            try {
+                await db.collection('chats').doc(chatId).set({
+                    chatId: chatId,
+                    messages: chats[chatId],
+                    lastUpdated: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Error syncing message to Firebase:', error);
+            }
+            
+            input.value = '';
+            loadEventDetailsChat();
+        }
+
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(event) {
+            const notificationsBtn = document.getElementById('notificationsBtn');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            
+            if (notificationsBtn && notificationsDropdown && 
+                !notificationsBtn.contains(event.target) && 
+                !notificationsDropdown.contains(event.target)) {
+                notificationsDropdown.classList.add('hidden');
+            }
+        });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d29341625baec5',t:'MTc1NzU0NTU3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d3aae125086dba',t:'MTc1NzU1NzAzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
